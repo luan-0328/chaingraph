@@ -1,0 +1,190 @@
+/**
+ * 全局样式：企业后台 + 轻电商的浅色风格（v2.md §71）。
+ * 用户端可以稍微现代一点，客服端/管理端明显偏企业管理系统。
+ * 明确不要：霓虹、渐变、AI 机器人头像、大量发光、ChatGPT 式首页。
+ */
+
+:root {
+  --page-bg: #f5f7fa;
+  --card-bg: #ffffff;
+  --border-color: #e4e7ed;
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --brand: #409eff;
+  --price: #f56c6c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--page-bg);
+  color: var(--text-primary);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+/* ---------- 卡片 ---------- */
+.page-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 16px 20px;
+}
+
+.page-card + .page-card {
+  margin-top: 16px;
+}
+
+.page-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  padding-left: 8px;
+  border-left: 3px solid var(--brand);
+  line-height: 1.2;
+}
+
+/* ---------- 页头 / 工具栏 ---------- */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.page-header__title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* ---------- 文本工具类 ---------- */
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-regular {
+  color: var(--text-regular);
+}
+
+.text-price {
+  color: var(--price);
+  font-weight: 600;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pre-wrap {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---------- 商品卡片（用户端） ---------- */
+.product-card {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
+}
+
+.product-card__name {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  min-height: 44px;
+}
+
+.product-card__desc {
+  color: var(--text-secondary);
+  font-size: 12px;
+  flex: 1;
+  min-height: 40px;
+}
+
+.product-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+/* ---------- 工单对话 ---------- */
+.chat {
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 8px 4px;
+}
+
+.chat__item {
+  margin-bottom: 14px;
+}
+
+.chat__meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.chat__bubble {
+  display: inline-block;
+  max-width: 80%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #f4f4f5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat__item--right {
+  text-align: right;
+}
+
+.chat__item--right .chat__bubble {
+  background: #ecf5ff;
+  text-align: left;
+}

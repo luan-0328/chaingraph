@@ -1,0 +1,53 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---------- 环境变量（含 Key，绝不提交）----------
+.env
+.env.*
+!.env.example
+!frontend/.env.development
+
+# ---------- 私人文档 / 凭据 / 本地截图 ----------
+*简历*
+*[Rr]esume*.pdf
+*[Rr]esume*.docx
+*[Rr]esume*.doc
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+_shots_v2/
+
+# ---------- 工具 ----------
+.idea/
+.vscode/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---------- 日志 / 临时文件 ----------
+*.log
+logs/
+
+# ---------- 前端依赖 / 构建产物 ----------
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ---------- 本地数据（Checkpoint SQLite / 本地向量库 / 日志）----------
+backend/data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.db
+*.db-shm
+*.db-wal

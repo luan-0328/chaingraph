@@ -1,0 +1,113 @@
+/**
+ * 全局样式：典型企业后台的浅色风格。
+ *
+ * 前端文档第四十八节的视觉规范：
+ *   页面背景浅灰 #f5f7fa、卡片白底 + 小圆角 + 轻阴影、
+ *   主要操作蓝色、危险操作红色、系统字体。
+ * 明确不要：渐变 / 粒子 / 霓虹 / 机器人 / AI 大屏 / 聊天气泡。
+ */
+
+:root {
+  --page-bg: #f5f7fa;
+  --card-bg: #ffffff;
+  --border-color: #e4e7ed;
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --brand: #409eff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--page-bg);
+  color: var(--text-primary);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+/* ---------- 通用卡片 ---------- */
+.page-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 16px 20px;
+}
+
+.page-card + .page-card {
+  margin-top: 16px;
+}
+
+.page-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  padding-left: 8px;
+  border-left: 3px solid var(--brand);
+  line-height: 1.2;
+}
+
+/* ---------- 页面头部 ---------- */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.page-header__title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ---------- 工具栏 ---------- */
+.toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.toolbar__spacer {
+  flex: 1;
+}
+
+/* ---------- 文本工具类 ---------- */
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-regular {
+  color: var(--text-regular);
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pre-wrap {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

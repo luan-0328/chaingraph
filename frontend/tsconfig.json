@@ -1,0 +1,14 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "vite.config.ts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["node", "vite/client"],
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}

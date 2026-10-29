@@ -1,0 +1,31 @@
+# ===========================================================
+# AI 智能工单处理平台 —— 第一阶段依赖（pip 写法）
+#
+# 【注意】项目现在用 uv 管理依赖，依赖清单以 pyproject.toml 为准，
+#         本文件只是"不用 uv 时"（pip install -r）的等价备份。
+#         改依赖请用：uv add <包名> / uv remove <包名>
+#         需要重新导出本文件时：uv export --no-hashes --no-dev --output-file requirements.txt
+#
+# 说明：第一阶段只安装「FastAPI + MySQL 基础 + LangGraph + LLM」需要的东西。
+#       不要把 Qdrant / Redis / RabbitMQ / LangSmith 提前装进来。
+# ===========================================================
+
+# ---------- Web 层 ----------
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+pydantic-settings>=2.3
+
+# ---------- 数据库层（第一阶段只搭架子，先装着，后面才真正用） ----------
+SQLAlchemy>=2.0
+PyMySQL>=1.1
+cryptography>=42.0          # MySQL 8 的 caching_sha2_password 认证需要它
+
+# ---------- Agent 层 ----------
+langchain>=0.3
+langchain-core>=0.3
+langchain-openai>=0.2       # 通过 OpenAI 兼容协议调用 DeepSeek 等模型
+langgraph>=0.2
+
+# ---------- 配置 ----------
+python-dotenv>=1.0

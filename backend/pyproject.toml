@@ -1,0 +1,56 @@
+[project]
+name = "shop-ticket-backend"
+version = "2.0.0"
+description = "智能电商客服与售后工单平台 —— 后端（FastAPI + MySQL + LangGraph Agent）"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # ---------- Web ----------
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    # ---------- 数据库 ----------
+    "sqlalchemy>=2.0",
+    "pymysql>=1.1",
+    "cryptography>=42.0",
+    # ---------- 鉴权 ----------
+    "pyjwt>=2.9",
+    # ---------- Agent ----------
+    "langchain>=0.3",
+    "langchain-core>=0.3",
+    "langchain-openai>=0.2",          # LLM + OpenAI 兼容 embedding
+    "langgraph>=0.2",
+    "langgraph-checkpoint-sqlite>=2.0",  # Checkpoint 持久化（HITL 暂停/恢复）
+    # ---------- RAG ----------
+    "qdrant-client>=1.19",            # 向量库：索引与 ANN 检索（可本地内嵌，也可连服务端）
+    "numpy>=1.26",                    # 回退实现（MySQL 里的向量）做全量余弦
+    # ---------- 其它 ----------
+    "python-dotenv>=1.0",
+    "httpx>=0.27",                    # 测试/健康检查用
+]
+
+[dependency-groups]
+# ---------- 测试 ----------
+# 安装：uv sync --group dev（或 uv pip install pytest pytest-asyncio）
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: 需要真实 MySQL（由 conftest 探测，不可用时自动跳过）",
+    "agent: 需要启动带确定性 LLM 桩的服务实例（不花 LLM 费用）",
+]
+asyncio_mode = "auto"
+
+[[tool.uv.index]]
+url = "https://mirrors.aliyun.com/pypi/simple/"
+default = true
+
+[tool.uv]
+# 这是应用而不是库：代码是 app/ 目录，从 backend/ 根目录导入即可
+package = false
