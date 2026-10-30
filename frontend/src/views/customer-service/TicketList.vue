@@ -5,7 +5,7 @@
  * 客服每天第一件事就是"筛出我该处理的"，所以筛选条件（状态/只看我的/未领取/待人工确认）
  * 全部走服务端参数，不在前端过滤 —— 分页时前端过滤会得出错误的总数。
  */
-import { onMounted, reactive, ref } from 'vue'
+import { onUnmounted, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
@@ -106,7 +106,12 @@ async function takeTicket(row: TicketSummary): Promise<void> {
   }
 }
 
-onMounted(load)
+let refreshTimer: ReturnType<typeof setInterval> | null = null
+onMounted(() => {
+  void load()
+  refreshTimer = setInterval(() => { if (!loading.value && document.visibilityState === 'visible') void load() }, 10000)
+})
+onUnmounted(() => { if (refreshTimer) clearInterval(refreshTimer) })
 </script>
 
 <template>
@@ -143,6 +148,9 @@ onMounted(load)
       </div>
 
       <el-table v-loading="loading" :data="rows" size="default">
+        <el-table-column label="未读" width="75">
+          <template #default="{ row }"><el-tag v-if="row.unread_count" type="danger" size="small">{{ row.unread_count }}</el-tag></template>
+        </el-table-column>
         <el-table-column prop="ticket_no" label="工单号" width="180" />
         <el-table-column label="标题" min-width="230" show-overflow-tooltip>
           <template #default="{ row }">

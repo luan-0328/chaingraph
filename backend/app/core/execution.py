@@ -11,6 +11,10 @@ class ExecutionLost(RuntimeError):
     """租约失效或执行已被接管；不能继续提交业务动作。"""
 
 
+class HumanHandoffRequested(RuntimeError):
+    """执行资格仍有效，但用户或系统要求安全交接；只结束当前工单，不杀死其他任务。"""
+
+
 @dataclass(frozen=True)
 class ExecutionClaim:
     ticket_id: int
@@ -23,7 +27,7 @@ execution_claim: ContextVar[ExecutionClaim | None] = ContextVar("execution_claim
 execution_session: ContextVar[object | None] = ContextVar("execution_session", default=None)
 
 
-def assert_execution(db, claim: ExecutionClaim) -> None:
+def assert_execution(db, claim: ExecutionClaim, *, allow_handoff: bool = False) -> None:
     # 所有执行事务统一按工单 → Run → 订单加锁，避免接管和业务提交交叉。
     from app.models.ticket import Ticket
     from app.models.agent_run import AgentRun, AgentRunStatus
@@ -35,3 +39,6 @@ def assert_execution(db, claim: ExecutionClaim) -> None:
             or run.worker_id != claim.worker_id or run.lease_until is None
             or run.lease_until <= utcnow()):
         raise ExecutionLost("执行租约已失效，停止本次执行")
+    from app.models.ticket import HandlingMode
+    if not allow_handoff and ticket.handling_mode != HandlingMode.AGENT:
+        raise HumanHandoffRequested("工单正在转人工，禁止继续自动写入业务数据")

@@ -11,7 +11,7 @@ import asyncio
 import json
 from collections.abc import AsyncIterator
 
-from fastapi import APIRouter, Depends, Header, Query, Request, status
+from fastapi import APIRouter, Depends, Header, Query, Request, status, UploadFile, File
 from fastapi.responses import StreamingResponse
 
 from app.api import mappers
@@ -25,6 +25,8 @@ from app.schemas.agent import (
     AgentRejectRequest,
 )
 from app.schemas.ticket import (
+    HumanRequest,
+    MessageReadRequest,
     TicketCloseRequest,
     TicketCreate,
     TicketDetail,
@@ -79,6 +81,37 @@ def list_my_tickets(
     )
 
 
+@router.get("/unread-summary", summary="当前账号未读工单消息汇总")
+def unread_summary(current_user: dict = Depends(get_current_user)) -> dict:
+    from app.services.message_read_service import summary
+    return summary(current_user)
+
+
+@router.post("/{ticket_id}/read", summary="标记已经显示的消息为已读")
+def mark_messages_read(ticket_id: int, payload: MessageReadRequest, current_user: dict = Depends(get_current_user)) -> dict:
+    from app.services.message_read_service import mark_read
+    return mark_read(ticket_id=ticket_id, viewer=current_user, last_message_id=payload.last_message_id)
+
+
+@router.post("/{ticket_id}/attachments", response_model=TicketMessageInfo, status_code=201, summary="上传工单图片")
+async def upload_attachment(ticket_id: int, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)) -> TicketMessageInfo:
+    from app.core.config import settings
+    from app.services.attachment_service import upload_image
+    try:
+        data = await file.read(settings.oss_max_upload_bytes + 1)
+        message = await asyncio.to_thread(upload_image, ticket_id=ticket_id, viewer=current_user,
+            filename=file.filename or "图片", declared_type=file.content_type or "", data=data)
+        return TicketMessageInfo(**mappers.message_info(message))
+    finally:
+        await file.close()
+
+
+@router.get("/{ticket_id}/attachments/{attachment_id}/url", summary="鉴权后生成图片短期查看链接")
+def attachment_url(ticket_id: int, attachment_id: int, current_user: dict = Depends(get_current_user)) -> dict:
+    from app.services.attachment_service import image_url
+    return image_url(ticket_id=ticket_id, attachment_id=attachment_id, viewer=current_user)
+
+
 @router.get("/{ticket_id}", response_model=TicketDetail, summary="工单详情")
 def get_ticket(
     ticket_id: int,
@@ -112,6 +145,22 @@ def reopen_ticket(
 ) -> TicketDetail:
     """用户对结果不满意 → 工单回到处理中。"""
     ticket = ticket_service.reopen_ticket(ticket_id=ticket_id, user_id=current_user["id"])
+    return TicketDetail(**mappers.ticket_detail(ticket))
+
+
+@router.post("/{ticket_id}/request-human", response_model=TicketDetail, summary="用户请求人工客服")
+def request_human(ticket_id: int, payload: HumanRequest, current_user: dict = Depends(get_current_user)) -> TicketDetail:
+    """运行中只申请安全交接，未运行或已暂停的任务立即进入人工待办。"""
+    from app.services import handoff_service
+    ticket = handoff_service.request_human(ticket_id=ticket_id, user_id=current_user["id"], reason=payload.reason)
+    return TicketDetail(**mappers.ticket_detail(ticket))
+
+
+@router.post("/{ticket_id}/return-to-agent", response_model=TicketDetail, summary="负责客服明确交回 Agent")
+def return_to_agent(ticket_id: int, current_user: dict = Depends(require_roles(Role.CUSTOMER_SERVICE, Role.ADMIN))) -> TicketDetail:
+    """只解除人工模式；再次启动将创建新任务，不恢复已交接的旧图。"""
+    from app.services import handoff_service
+    ticket = handoff_service.return_to_agent(ticket_id=ticket_id, operator_id=current_user["id"])
     return TicketDetail(**mappers.ticket_detail(ticket))
 
 
@@ -324,6 +373,8 @@ async def reject_ticket(
         approved=False,
         comment=payload.reason, expected_run_id=payload.expected_run_id, review_round=payload.review_round,
     )
+    if decision.get("review_changed"):
+        agent_task_service.conflict("订单状态已变化，请刷新后重新审核")
     return TicketDetail(**mappers.ticket_detail(ticket_service.get_ticket_detail(ticket_id)))
 
 

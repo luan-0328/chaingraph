@@ -56,6 +56,7 @@ def get_document_by_source(db: Session, source: str) -> dict | None:
 
 
 def get_document_for_update(db: Session, document_id: int) -> dict | None:
+    """锁定并刷新知识文档，供发布时核对向量化期间的版本变化。"""
     document = db.scalar(select(KnowledgeDocument).where(
         KnowledgeDocument.id == document_id).with_for_update().execution_options(populate_existing=True))
     return document.to_dict() if document else None

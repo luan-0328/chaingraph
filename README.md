@@ -12,9 +12,13 @@ Agent 现在由独立 worker 执行：启动 API 后，另开终端在 `backend/
 `uv run python -m app.worker`。仅启动 API 时任务会排队，不会自动运行。
 旧的同步执行与审批验收脚本尚需适配新契约，以下历史测试数量不代表本轮验证结果。
 
+当前异步版本可在 `backend/` 运行 `uv run python scripts/run_async_regression.py`。
+新测试会启动真实 API 与 worker，使用独立数据库验证审批和崩溃恢复，并自动清理
+测试数据与运行产物。覆盖范围及使用方式见 [异步回归说明](backend/docs/agent-worker.md#当前异步版本的回归测试)。
+
 ```text
-backend/    FastAPI + SQLAlchemy + Qdrant + LangGraph（app 116 个 py 文件 + tests 90 项 pytest 回归网）
-frontend/   Vue 3 + TS + Element Plus 三端 SPA（52 个 ts/vue 文件）
+backend/    FastAPI + SQLAlchemy + Qdrant + LangGraph（API + 单机独立 worker + 隔离异步回归）
+frontend/   Vue 3 + TS + Element Plus 三端 SPA
 legacy/     V1 骨架（旧 app/、旧前端 src、旧 sql）—— 不参与运行
 v2.md       V2.0 规格书：数据模型 / 接口 / Agent 设计 / 验收标准
 ```
@@ -29,8 +33,8 @@ cd backend
 uv sync                    # 装依赖（uv 管理，声明在 pyproject.toml）
 notepad .env               # 填 DATABASE_URL / LLM_API_KEY（见 .env.example）
 uv run uvicorn app.main:app --reload
-#   启动时自动：建库建表 → 灌演示数据 → 初始化 Checkpoint → 编译 Agent 图 →
-#   知识库入库 → **向量索引自检**（索引与库不一致就从 MySQL 重灌，不重算 Embedding）
+#   API 初始化数据库与知识库；另开终端启动 worker，独占 Checkpoint 并执行任务。
+uv run python -m app.worker
 
 # ---------- 向量库（可选，但推荐）----------
 # 不装也能跑：VECTOR_STORE 默认 qdrant，连不上时 RAG 自动回退到 MySQL 里的向量 + numpy 余弦，
@@ -50,37 +54,27 @@ npm run dev                # http://127.0.0.1:5173（/api 由 Vite 代理到 800
 - 健康检查：<http://127.0.0.1:8000/health>（含 DB / LLM / Embedding / **向量库后端**状态）
 - 演示账号（dev 环境自动创建，密码见括号）：`alice`(123456) 用户 · `service01`(123456) 客服 · `admin`(admin123) 管理员
 
-### 一条命令验收（v2.md Phase 19 + Phase 20）
+### 当前版本验证与评测
 
-```powershell
+```bash
 cd backend
-
-# ---------- pytest：并发安全 / 幂等 / 越权 / Agent 重试 / HITL / 向量库 / 完整链路（90 项）----------
-uv run pytest                                   # 自己拉起被测实例（:8021 业务 / :8022 Agent 桩 / :8023 会真退款的链路）
-uv run pytest tests/test_concurrency_money.py   # 只看"钱和货"的并发与幂等
-uv run pytest -m agent                          # 只看 Agent 重试 / 断点续跑 / HITL
-
-# ---------- 脚本式验收（黑盒 HTTP，输出人读的报告）----------
-uv run python scripts/acceptance.py            # 业务链路：场景 A~D + 异常与安全（约 3~5 分钟，含真实 LLM 调用）
-uv run python scripts/acceptance.py --only A   # 只跑"完整购物"
-uv run python scripts/acceptance.py --only 19  # 只跑权限/归属/幂等/故障注入
-
-uv run python scripts/concurrency_check.py     # 并发控制：同工单互斥 / 不同工单并发 / 断点恢复（66 项，不需要 LLM_API_KEY）
-uv run python scripts/concurrency_check.py --only 5   # 只跑最核心的"并发竞争"
-uv run python scripts/concurrency_safety.py   # 业务并发安全：重复支付/退款、库存超卖、非法状态（25 项，需 :8000）
-uv run python scripts/e2e_chain.py            # 端到端链路：下单→支付→售后→工单→Agent→退款→结单（24 项）
-uv run python scripts/test_resume_guard.py    # 断点续跑的安全判定（9 项纯逻辑，秒级）
-uv run python scripts/test_side_effect_guard.py  # 副作用幂等键行为（7 项，含并发抢键）
+# 真实 API / worker / MySQL / SQLite，模型使用确定性桩；自动清理独立测试库
+uv run python scripts/run_async_regression.py --junitxml=docs/async-regression.xml -o junit_family=legacy --durations=12
+# 可选浏览器验收
+uv run python scripts/run_async_regression.py --browser -k browser_review
+# 当前140题评测：默认免费本地向量；加 --providers local configured 比较已配置语义模型
+uv run python scripts/run_rag_evaluation.py
+uv run python scripts/check_rag_regression.py
+uv run pytest tests_rag -q
 ```
 
-**pytest 与脚本的分工**：脚本是**黑盒验收**（输出人读报告、自己拉故障实例、能打真实 LLM）；
-pytest 是**可断言的回归网**，覆盖那些"必须失败才算通过"的路径（越权、非法状态、重复请求）。
-两者共用同一批不变量，改代码后先跑 pytest 定位，再用脚本看整体报告。
+RAG最新方法、实测与自动化接入见 [RAG评测说明](backend/docs/rag-evaluation-guide.md)。
+历史验证结果与复现边界见 [验证记录](backend/docs/validation.md)，任务生命周期见
+[worker 运行说明](backend/docs/agent-worker.md)。检索评测是人工编写开发集上的离线基线，
+不代表真实模型回答效果。真实 Embedding 对比需显式使用 `--provider configured`，可能产生费用。
 
-`pytest` 会自己拉起三个被测实例（复用时不会抢占你手起的 `:8000`）：
-`:8021` 纯业务实例、`:8022` 确定性 LLM 桩（并发/重试/HITL）、
-`:8023` 确定性 LLM 桩 + `business_action=apply_refund`（**会真的把钱退掉**的完整链路）。
-MySQL 不可达时整个 `integration` 组自动 skip，不会误报红。
+历史 `tests/`、`acceptance.py`、`concurrency_check.py` 等仍含同步执行契约，
+不作为当前异步版本的通过依据。下文历史测试清单仅用于定位待迁移覆盖范围。
 
 ### 注释与可读性体检
 
@@ -121,8 +115,8 @@ uv run python scripts/check_comments.py --all    # 含历史区（只提示，�
 | 5 | **过程可解释**：Agent 每一步业务事件（分析→检索→调工具→执行→等人工→完成）落库 `agent_run_events`，同时用 SSE 实时推给前端；断线重连带 `Last-Event-ID` 只补缺失的那一段 | `app/agent/events.py`、`app/agent/progress.py`、`app/api/tickets.py` |
 | 6 | **RAG 有出处**：回答里带 `references`（标题 / 文件名 / 相似度），前端展示"参考知识"，检索不到就如实说没有 | `app/rag/*`、`knowledge/*.md` |
 | 7 | **幂等与并发（三层防护）**：条件更新（`UPDATE ... WHERE status=可退款状态`）→ 数据库唯一约束（`payments/refund_records.active_order_id` 生成列）→ 副作用幂等键（`side_effect_claims`）。重复支付、重复退款、并发双击都只能成功一次（409 + 业务码） | `app/repositories/*_repository.py` 的 `claim_*()`、`app/models/payment.py`、`refund.py`、`side_effect.py` |
-| 8 | **Agent 执行也互斥**：同一工单被并发点 N 次只会跑一次 Agent（原子 UPDATE 抢 `tickets.agent_status`，抢不到就返回当前那次执行）；不同工单之间没有任何全局锁，真正并发 | `app/repositories/ticket_repository.py`、`app/services/ticket_service.py`、[`docs/concurrency.md`](backend/docs/concurrency.md) |
-| 9 | **失败可降级**：LLM 挂了 → 工单 FAILED 且不卡在 PROCESSING；RAG 挂了 → 无规则依据照样回答；Tool 出错 → 返回结构化错误给模型而不是抛穿 | `app/agent/nodes/analyze.py`、`retrieve.py`、`app/tools/*` |
+| 8 | **Agent 执行也互斥**：同一工单被并发点 N 次只会跑一次 Agent（提交事务锁工单并复用活动 Run；worker 领取时加行锁并复查租约）；单机 worker 内不同工单可并发 | `app/services/agent_task_service.py`、`app/core/execution.py`、[`agent-worker.md`](backend/docs/agent-worker.md) |
+| 9 | **失败可降级**：LLM 失败 → 有限重试，最终失败转人工；必要规则或业务事实缺失 → 转人工；Tool 出错 → 结构化错误 | `app/agent/nodes/analyze.py`、`retrieve.py`、`app/tools/*` |
 | 10 | **知识有发布状态**：草稿不在向量库里（检索不到）；改正文自动退回草稿并作废旧向量；下线立刻不可检索但保留分块（重新发布不用重算向量） | `app/services/knowledge_service.py`、`app/models/knowledge.py`、`app/rag/ingest.py` |
 | 11 | **向量库是"可换的索引"而不是"第二份数据"**：分块正文与向量始终以 MySQL 为准，Qdrant 只是它的检索索引 —— 换后端/索引丢了/换机器，一条命令从 MySQL 重灌（**不重算 Embedding、不花钱**）；Qdrant 连不上时自动回退 MySQL 全量余弦，RAG 不会因此瘫掉 | `app/rag/qdrant_store.py`、`app/rag/index.py`、`app/rag/vector_store.py` |
 
@@ -190,10 +184,10 @@ Agent 侧（同样"业务规则在代码里"）：
 | POST/GET | `/api/after-sales` | 申请售后 / 我的售后 |
 | POST | `/api/after-sales/{id}/refund`·`/cancel` | **申请退款**（返回 `executed` / `need_human`）/ 撤销 |
 | POST/GET | `/api/tickets` | 创建工单（带 `order_id`/`after_sale_id` 上下文）/ 我的工单 |
-| POST | `/api/tickets/{id}/process` | **启动 Agent**（同步返回决策/结果/状态） |
+| POST | `/api/tickets/{id}/process` | **提交 Agent 任务**（202 返回任务状态，worker 异步执行） |
 | GET | `/api/tickets/{id}/stream` | **SSE**：Agent 业务进度（带历史回放 + `Last-Event-ID` 续传） |
 | POST | `/api/tickets/{id}/messages`·`/close`·`/reopen` | 留言 / 关单 / 重开 |
-| POST | `/api/tickets/{id}/approve`·`/reject`·`/takeover` | **HITL 三个出口**：批准（恢复 Graph）/ 驳回（转人工）/ 接管（终止 Agent + 领取归属）· 仅客服 |
+| POST | `/api/tickets/{id}/approve`·`/reject`·`/takeover` | **HITL 三个出口**：批准/驳回异步提交决定，worker 恢复 Graph；接管暂停任务 · 仅客服 |
 
 </details>
 
@@ -302,30 +296,28 @@ knowledge_chunks     分块正文 + 向量  ─┼─► app/rag/index.py ─►
 
 ## Agent 并发控制（同工单互斥 / 不同工单并发）
 
-完整设计见 **[`backend/docs/concurrency.md`](backend/docs/concurrency.md)**，一页版本：
+当前实现见 [worker 运行说明](backend/docs/agent-worker.md)，历史同步方案保存在
+[concurrency.md](backend/docs/concurrency.md)，不作为当前领取逻辑的说明。
 
 ```text
 POST /tickets/{id}/process
-        ↓
-UPDATE tickets SET agent_status='RUNNING', agent_run_id=?
- WHERE id=? AND agent_status='IDLE'          -- ← 原子抢占，看 affected_rows
-        ├── 1 → 创建 AgentRun → LangGraph(async) → … → finally 释放执行权
-        └── 0 → 不创建 AgentRun，返回当前活跃的那次执行
+        ↓ 短事务：锁工单 → 复用活动 Run 或创建 PENDING Run
+HTTP 202 返回任务标识
+        ↓ worker 有并发空位时扫描
+候选 PENDING / 租约过期 RUNNING
+        ↓ 锁工单 → 锁 Run → 复查关联、状态、租约
+设置 worker_id / execution_epoch + 1 / lease_until
+        ↓ 构造 ExecutionClaim，独立线程续租
+读取同一 thread_id 的 Checkpoint → 执行或恢复图 → 更新任务终态
 ```
 
-| 原则 | 落点 |
-|---|---|
-| 同一工单必须互斥 | `tickets.agent_status` 的原子 UPDATE（`app/repositories/ticket_repository.py`）；同工单被点 N 次只跑一次 |
-| 不同工单可以并发 | 没有任何全局锁 —— "锁"就是工单自己那一行；`asyncio.Lock` 是明确禁止项 |
-| LLM 异步、业务状态由数据库保证 | `await graph.ainvoke(...)` 解决 I/O 并发；一致性交给上面这条 UPDATE |
-| 异常也必须释放 | `try/finally` 收尾，且带 `agent_run_id` 归属校验，防止误放别人的新执行 |
-| 进程崩溃也不能卡死 | `agent_runs.alive_at` 心跳 + 僵尸执行回收（心跳超时的 RUNNING 可被接管） |
-| 需要人工时不另起一次 | `WAITING_HUMAN` 只能由 approve/reject 恢复，并**恢复原 AgentRun 的原 thread_id** |
-| 中途失败从断点续跑 | 可恢复异常重试时 `ainvoke(None, ...)` 复用同一 thread_id，已跑完的只读节点不重跑；动过业务就退回从头跑 |
-| 失败可重试但要有边界 | 只对可恢复异常（超时/429/依赖抖动）重试，业务异常立刻失败并说明原因；重试是同一条 run，用户重新发起才是新 run |
-| 钱和货同样有并发保护 | 支付/退款用行锁 + 事务内复查；库存用 `WHERE stock >= ?` 条件更新，外加 `CHECK (stock >= 0)` 兜底 |
-| 副作用有幂等键 | `side_effect_claims.dedup_key` 唯一约束：同一次执行对同一订单的退款只可能落一次（重试/续跑/并发都被挡住），用户重新发起才是新的一次意图 |
-| 过程可观测到节点级 | `agent_runs.current_node` 由 LangGraph 回调写入（"此刻卡在哪个节点"），配合 `alive_at` 心跳可区分"还在跑 LLM"和"进程已死" |
+- 领取互斥靠行锁事务；业务事务校验任务关联、执行者、代次与有效租约。
+- `alive_at` 是活跃时间；领取判断使用 `lease_until`，不根据旧节点名猜进度。
+- 同步数据库事务和工具交给线程，异步协程调度不同工单；心跳线程独立续租。
+- 续租失败包括数据库故障和执行资格失效，不等同于租约到期。当前策略退出整个 worker，需进程管理器重启。
+- 人工审批复用原 Run/thread；审批绑定轮次和业务快照，真正动作前再次核验。
+- 恢复缺少 Checkpoint 时交人工核实；副作用通过幂等记录和业务结果核对防止重复执行。
+- 单机进程锁覆盖 Checkpoint 生命周期；不支持跨机器多 worker。
 
 ---
 
@@ -383,7 +375,9 @@ UPDATE tickets SET agent_status='RUNNING', agent_run_id=?
 前端另有一套浏览器端 E2E（Playwright，真实点按钮 + 真实 LLM）：
 `cd frontend && node e2e-v2.mjs`（需后端 :8000 与前端 :5173 都已启动）。
 
-### pytest 回归网（`backend/tests/`，90 项）
+### 历史 pytest 覆盖清单（同步契约，待迁移）
+
+以下数量与运行说明来自旧版本，不代表当前代码全部通过。当前验收入口为 `scripts/run_async_regression.py`。
 
 `uv run pytest` 会把被测服务**自己拉起来**（和生产的启动方式完全一致），
 只用确定性 LLM 桩替换模型调用，所以**不花 LLM 费用、也不需要你手动先起服务**。
@@ -467,10 +461,9 @@ uv run python scripts/cleanup_test_data.py --apply    # 真的删（只删 pytes
    一个向量索引只能有一个维度，此时检索会记一条"维度不一致"的 warning 并返回空
    （比拿两个模型的向量算相似度要好 —— 那种分数毫无意义）。
 2. **支付/物流是模拟的**：`/pay` 直接把订单置为 PAID，物流状态由客服端接口推进（没有接真实支付/快递网关）。
-3. **Checkpoint 落在 SQLite**（`backend/data/checkpoints.sqlite`）：单机够用，多实例部署要换成 Postgres/Redis Saver。
-4. **用户长期记忆**（`user_memories`）只做了落库与查询工具，还没有"自动总结历史对话写回记忆"的环节。
-5. **SSE 是进程内内存总线**：多实例部署时事件不互通，要换 Redis Pub/Sub
-   （`emit_event()` 的调用方不用改；事件本身已经落库，所以换掉只影响实时性，不影响可追溯性）。
+3. **Checkpoint 落在 SQLite**（`backend/data/checkpoints.sqlite`）：仅支持单机单 worker。多机器扩展还需共享 Checkpoint、执行互斥和部署恢复方案，不能只替换 Saver。
+4. **跨工单记忆**：结单时自动保存有来源的处理摘要，生成方案前读取最近三条有效记录；重开会排除旧结论，用户可查询或删除。没有前端管理页面，也不是模型自动学习偏好。
+5. **当前 SSE 从 MySQL 读取持久化事件**，按事件主键游标回放，不依赖 API 与 worker 共享内存。大量长连接时仍需测量数据库轮询负载。
 6. **向量库默认 Qdrant，但"本地内嵌模式"的目录是独占的**：`QDRANT_URL` 留空时数据落在
    `backend/data/qdrant`，同一目录只能被一个进程打开 —— 开发单实例足够，
    pytest 同时拉 3 个实例时只有第一个用得上 Qdrant（其余 WARNING + 回退 MySQL，测试照样通过）。

@@ -27,9 +27,9 @@ const toolResults = computed(() => result.value?.tool_results ?? [])
 /** 是否要人工：decision / result / run 三处任一为真都算（历史数据可能只落了一处） */
 const needHuman = computed(
   () =>
-    Boolean(props.run?.need_human) ||
+    props.run?.status === 'WAITING_HUMAN' && (Boolean(props.run?.need_human) ||
     Boolean(result.value?.need_human) ||
-    Boolean(decision.value?.need_human),
+    Boolean(decision.value?.need_human)),
 )
 
 const issueType = computed(() => decision.value?.issue_type ?? result.value?.issue_type ?? null)
@@ -43,6 +43,7 @@ const issueType = computed(() => decision.value?.issue_type ?? result.value?.iss
 const businessActionText = computed(() => {
   const action = result.value?.business_action ?? ''
   if (!action) return ''
+  if (props.run?.status !== 'COMPLETED' && !needHuman.value) return '方案涉及业务操作，实际执行结果请核实'
   if (action === 'apply_refund') return needHuman.value ? '待执行退款（等待人工审核）' : '已执行退款'
   if (action === 'cancel_order')
     return needHuman.value ? '待执行取消订单（等待人工审核）' : '已执行取消订单'
@@ -76,10 +77,10 @@ const businessActionTag = computed(() => {
       <el-alert
         v-if="run.error"
         class="agent-result__alert"
-        type="error"
+        :type="run.error.startsWith('HUMAN_HANDOFF') ? 'info' : 'error'"
         show-icon
         :closable="false"
-        title="本次 Agent 执行出错"
+        :title="run.error.startsWith('HUMAN_HANDOFF') ? '已转人工处理' : '本次 Agent 执行出错'"
         :description="run.error"
       />
 

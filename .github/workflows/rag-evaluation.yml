@@ -1,0 +1,37 @@
+name: RAG regression
+on:
+  pull_request:
+    paths:
+      - 'backend/app/rag/**'
+      - 'backend/app/core/config.py'
+      - 'backend/evals/**'
+      - 'backend/knowledge/**'
+      - 'backend/scripts/*rag*.py'
+      - 'backend/tests_rag/**'
+      - 'backend/pyproject.toml'
+      - 'backend/uv.lock'
+      - '.github/workflows/rag-evaluation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-regression:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.14'
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run pytest tests_rag -q
+      - run: uv run python scripts/check_rag_regression.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rag-regression
+          path: backend/data/rag-regression-result.json
+          if-no-files-found: ignore

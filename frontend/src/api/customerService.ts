@@ -161,3 +161,11 @@ export function approveTicket(ticketId: number, expectedRunId: number, reviewRou
 export function rejectTicket(ticketId: number, expectedRunId: number, reviewRound: number, reason?: string): Promise<TicketDetail> {
   return request.post<unknown, TicketDetail>(`/tickets/${ticketId}/reject`, { reason, expected_run_id: expectedRunId, review_round: reviewRound })
 }
+
+export function takeoverTicket(ticketId: number): Promise<TicketDetail> {
+  return request.post<unknown, TicketDetail>(`/tickets/${ticketId}/takeover`, {})
+}
+
+export function returnToAgent(ticketId: number): Promise<TicketDetail> {
+  return request.post<unknown, TicketDetail>(`/tickets/${ticketId}/return-to-agent`)
+}

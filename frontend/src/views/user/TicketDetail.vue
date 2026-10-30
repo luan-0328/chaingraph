@@ -17,12 +17,15 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import AgentProcessTimeline from '@/components/agent/AgentProcessTimeline.vue'
 import AgentResultCard from '@/components/agent/AgentResultCard.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
+import { useTicketReadReceipt } from '@/composables/useTicketReadReceipt'
+import TicketImageUpload from '@/components/ticket/TicketImageUpload.vue'
 import TicketMessageInput from '@/components/ticket/TicketMessageInput.vue'
 import TicketMessageList from '@/components/ticket/TicketMessageList.vue'
 import {
   closeTicket,
   getTicket,
   processTicket,
+  requestHuman,
   reopenTicket,
   sendMessage,
   subscribeTicketStream,
@@ -39,9 +42,12 @@ const ticketId = computed(() => Number(route.params.id))
 
 const loading = ref(true)
 const detail = ref<TicketDetail | null>(null)
+useTicketReadReceipt(detail)
 const sending = ref(false)
 const processing = ref(false)
 const actingAction = ref('')
+let humanRefresh: ReturnType<typeof setInterval> | null = null
+let humanRefreshing = false
 
 const messageInputRef = ref<InstanceType<typeof TicketMessageInput> | null>(null)
 
@@ -179,7 +185,9 @@ function scheduleReconnect(): void {
   }
   retryCount += 1
   const delay = 1000 * 2 ** (retryCount - 1) // 1s → 2s → 4s 退避，别把后端打满
-  ElMessage.warning(`进度连接中断，${delay / 1000} 秒后自动重连（第 ${retryCount}/${MAX_RETRY} 次）`)
+  ElMessage.warning(
+    `进度连接中断，${delay / 1000} 秒后自动重连（第 ${retryCount}/${MAX_RETRY} 次）`,
+  )
   clearReconnectTimer()
   reconnectTimer = window.setTimeout(() => {
     reconnectTimer = null
@@ -209,6 +217,22 @@ async function handleProcess(): Promise<void> {
   await fetchDetail()
 }
 
+async function handleRequestHuman(): Promise<void> {
+  actingAction.value = 'human'
+  try {
+    detail.value = await requestHuman(ticketId.value)
+    ElMessage.success(
+      detail.value.handling_mode === 'HUMAN_PENDING'
+        ? '已申请转人工，正在安全交接'
+        : '已转人工，请等待客服回复',
+    )
+    if (detail.value.handling_mode === 'HUMAN_PENDING') startStream()
+    else stopStream()
+  } finally {
+    actingAction.value = ''
+  }
+}
+
 async function handleSend(content: string): Promise<void> {
   if (sending.value) return
   sending.value = true
@@ -226,11 +250,15 @@ async function handleSend(content: string): Promise<void> {
 async function handleReopen(): Promise<void> {
   if (actingAction.value) return
   try {
-    await ElMessageBox.confirm('重新打开后工单回到处理中，可以继续让 Agent 或客服处理。', '重新打开工单', {
-      confirmButtonText: '重新打开',
-      cancelButtonText: '取消',
-      type: 'info',
-    })
+    await ElMessageBox.confirm(
+      '重新打开后工单回到处理中，可以继续让 Agent 或客服处理。',
+      '重新打开工单',
+      {
+        confirmButtonText: '重新打开',
+        cancelButtonText: '取消',
+        type: 'info',
+      },
+    )
   } catch {
     return
   }
@@ -274,8 +302,11 @@ const canReopen = computed(
   () => detail.value?.status === 'RESOLVED' || detail.value?.status === 'CLOSED',
 )
 const isClosed = computed(() => detail.value?.status === 'CLOSED')
-const isWaitingHuman = computed(() => detail.value?.status === 'WAITING_HUMAN')
-const agentRunning = computed(() => processing.value || detail.value?.status === 'PROCESSING')
+const isWaitingHuman = computed(
+  () => detail.value?.status === 'WAITING_HUMAN' && detail.value.handling_mode === 'AGENT',
+)
+const isManual = computed(() => detail.value?.handling_mode !== 'AGENT')
+const agentRunning = computed(() => processing.value || detail.value?.agent_status === 'RUNNING')
 
 const processButtonText = computed(() => {
   if (agentRunning.value) return '处理中…'
@@ -296,27 +327,50 @@ onMounted(async () => {
   const fresh = await fetchDetail()
   loading.value = false
   // 刷新恢复：工单还是 PROCESSING 说明后台有 Agent 在跑，重新连上进度流
-  if (fresh?.status === 'PROCESSING') startStream()
+  if (fresh?.agent_status === 'RUNNING') startStream()
+  humanRefresh = setInterval(async () => {
+    if (
+      !detail.value ||
+      detail.value.handling_mode === 'AGENT' ||
+      humanRefreshing ||
+      isClosed.value
+    )
+      return
+    humanRefreshing = true
+    try {
+      await fetchDetail()
+    } finally {
+      humanRefreshing = false
+    }
+  }, 5000)
 })
 
 onBeforeUnmount(() => {
   // 关键：组件卸载就断开 SSE，否则连接会一直挂着
   clearReconnectTimer()
   stopStream()
+  if (humanRefresh !== null) clearInterval(humanRefresh)
 })
 </script>
 
 <template>
   <div v-loading="loading">
     <div class="page-header">
-      <h2 class="page-header__title">工单详情</h2>
-      <el-button text @click="router.push({ name: 'ticket-list' })">返回我的工单</el-button>
+      <div class="ticket-title">
+        <el-button link @click="router.push({ name: 'ticket-list' })">
+          <el-icon><ArrowLeft /></el-icon>
+          <span>我的工单</span>
+        </el-button>
+        <h2 class="page-header__title">工单详情</h2>
+      </div>
     </div>
 
     <div v-if="!loading && !detail" class="page-card">
       <el-result icon="warning" title="工单不存在或无权查看">
         <template #extra>
-          <el-button type="primary" @click="router.push({ name: 'ticket-list' })">返回我的工单</el-button>
+          <el-button type="primary" @click="router.push({ name: 'ticket-list' })"
+            >返回我的工单</el-button
+          >
         </template>
       </el-result>
     </div>
@@ -334,10 +388,12 @@ onBeforeUnmount(() => {
 
           <div class="ticket-head__right">
             <el-button
-              v-if="canReopen"
-              :loading="actingAction === 'reopen'"
-              @click="handleReopen"
+              v-if="detail.handling_mode === 'AGENT' && !isClosed"
+              :loading="actingAction === 'human'"
+              @click="handleRequestHuman"
+              >转人工客服</el-button
             >
+            <el-button v-if="canReopen" :loading="actingAction === 'reopen'" @click="handleReopen">
               重新打开
             </el-button>
             <el-button
@@ -354,6 +410,21 @@ onBeforeUnmount(() => {
 
         <!-- 待人工确认：这是本项目 HITL 的核心状态，必须让用户看得懂 -->
         <el-alert
+          v-if="isManual"
+          class="ticket-alert"
+          type="info"
+          show-icon
+          :closable="false"
+          :title="
+            detail.handling_mode === 'HUMAN_PENDING'
+              ? '正在安全转接人工客服'
+              : detail.assignee_id
+                ? '人工客服正在跟进'
+                : '已进入人工客服待办队列'
+          "
+          description="请在下方继续发送消息。转接完成后由客服回复，Agent 不会自动处理；已完成的业务操作不会被撤销。"
+        />
+        <el-alert
           v-if="isWaitingHuman"
           class="ticket-alert"
           type="warning"
@@ -369,22 +440,23 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <el-row :gutter="16">
+      <div class="ticket-grid">
         <!-- 左：对话 -->
-        <el-col :span="14">
+        <div class="ticket-chat">
           <div class="page-card">
             <h3 class="page-card__title">对话记录</h3>
             <TicketMessageList :messages="detail.messages" />
-            <TicketMessageInput
-              ref="messageInputRef"
-              :loading="sending"
-              @send="handleSend"
+            <TicketMessageInput ref="messageInputRef" :loading="sending" @send="handleSend" />
+            <TicketImageUpload
+              :ticket-id="ticketId"
+              :disabled="detail.status === 'CLOSED'"
+              @uploaded="fetchDetail()"
             />
           </div>
-        </el-col>
+        </div>
 
         <!-- 右：Agent 进度 + 结果 -->
-        <el-col :span="10">
+        <div class="ticket-side">
           <div class="page-card">
             <AgentProcessTimeline
               :events="timelineEvents"
@@ -396,25 +468,35 @@ onBeforeUnmount(() => {
               <el-button
                 type="primary"
                 :loading="processing"
-                :disabled="agentRunning"
+                :disabled="agentRunning || isManual"
                 @click="handleProcess"
               >
                 {{ processButtonText }}
               </el-button>
               <span class="text-secondary ticket-process__hint">
-                Agent 会先查订单/物流/售后，再检索客服规则，给出处理方案。
+                {{
+                  isManual
+                    ? '当前由人工跟进，负责客服交回后才能重新启动 Agent。'
+                    : 'Agent 会查询业务数据和客服规则，给出处理方案。'
+                }}
               </span>
             </div>
           </div>
 
           <AgentResultCard :run="detail.agent_run" />
-        </el-col>
-      </el-row>
+        </div>
+      </div>
     </template>
   </div>
 </template>
 
 <style scoped>
+.ticket-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .ticket-head {
   display: flex;
   align-items: center;
@@ -432,13 +514,20 @@ onBeforeUnmount(() => {
 }
 
 .ticket-head__no {
-  font-size: 16px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.3px;
 }
 
 .ticket-head__right {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ticket-head__right .el-button + .el-button {
+  margin-left: 0;
 }
 
 .ticket-alert {
@@ -446,7 +535,7 @@ onBeforeUnmount(() => {
 }
 
 .ticket-content {
-  padding-top: 12px;
+  padding-top: 14px;
   border-top: 1px solid var(--border-color);
 }
 
@@ -455,17 +544,50 @@ onBeforeUnmount(() => {
   margin-bottom: 4px;
 }
 
+.ticket-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ticket-chat,
+.ticket-side {
+  min-width: 0;
+}
+
+.ticket-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ticket-side .page-card + .page-card {
+  margin-top: 0;
+}
+
 .ticket-process {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid var(--border-color);
+}
+
+.ticket-process .el-button {
+  width: 100%;
 }
 
 .ticket-process__hint {
   font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1100px) {
+  .ticket-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

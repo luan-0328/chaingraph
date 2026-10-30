@@ -42,6 +42,8 @@ from app.models.refund import RefundRecord, RefundStatus
 from app.models.side_effect import SideEffectClaim, SideEffectKind
 from app.models.ticket import AgentStatus, Ticket, TicketPriority, TicketStatus, TicketType
 from app.models.ticket_message import SenderType, TicketMessage
+from app.models.ticket_read import TicketRead
+from app.models.ticket_attachment import TicketAttachment
 from app.models.user import Role, User, UserStatus
 from app.models.user_memory import MemoryType, UserMemory
 

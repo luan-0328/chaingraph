@@ -26,6 +26,8 @@ const orders = ref<OrderSummary[]>([])
 const total = ref(0)
 const page = ref(1)
 const fulfillmentFilter = ref<string>('')
+/** "全部" + 履约状态字典；用胶囊平铺，筛选常用状态少一次点击 */
+const fulfillmentFilters = [{ value: '', label: '全部' }, ...FULFILLMENT_STATUS_OPTIONS]
 
 /** 正在执行操作的订单 + 操作名：只让被点的那颗按钮转圈并禁止重复点击 */
 const actingId = ref<number | null>(null)
@@ -49,7 +51,9 @@ async function load(): Promise<void> {
   }
 }
 
-function handleFilterChange(): void {
+function selectFulfillment(value: string): void {
+  if (fulfillmentFilter.value === value) return
+  fulfillmentFilter.value = value
   page.value = 1
   void load()
 }
@@ -90,7 +94,11 @@ function hasLogistics(order: OrderSummary): boolean {
 }
 
 // ---------------- 操作 ----------------
-async function run(order: OrderSummary, action: string, task: () => Promise<unknown>): Promise<void> {
+async function run(
+  order: OrderSummary,
+  action: string,
+  task: () => Promise<unknown>,
+): Promise<void> {
   actingId.value = order.order_id
   actingAction.value = action
   try {
@@ -106,11 +114,15 @@ async function run(order: OrderSummary, action: string, task: () => Promise<unkn
 
 async function handlePay(order: OrderSummary): Promise<void> {
   try {
-    await ElMessageBox.confirm(`确认支付订单 ${order.order_no}（${formatAmount(order.total_amount)}）？`, '模拟支付', {
-      confirmButtonText: '确认支付',
-      cancelButtonText: '取消',
-      type: 'info',
-    })
+    await ElMessageBox.confirm(
+      `确认支付订单 ${order.order_no}（${formatAmount(order.total_amount)}）？`,
+      '模拟支付',
+      {
+        confirmButtonText: '确认支付',
+        cancelButtonText: '取消',
+        type: 'info',
+      },
+    )
   } catch {
     return
   }
@@ -175,33 +187,35 @@ onMounted(load)
 <template>
   <div>
     <div class="page-header">
-      <h2 class="page-header__title">我的订单</h2>
+      <div>
+        <h2 class="page-header__title">我的订单</h2>
+        <p class="page-header__sub">支付、发货与售后是三个独立状态，下面会分别展示。</p>
+      </div>
     </div>
 
     <div class="page-card">
-      <div class="toolbar">
-        <el-select
-          v-model="fulfillmentFilter"
-          placeholder="全部履约状态"
-          clearable
-          style="width: 180px"
-          @change="handleFilterChange"
+      <div class="filter-bar">
+        <button
+          v-for="option in fulfillmentFilters"
+          :key="option.value"
+          type="button"
+          class="filter-bar__item"
+          :class="{ 'is-active': fulfillmentFilter === option.value }"
+          @click="selectFulfillment(option.value)"
         >
-          <el-option
-            v-for="option in FULFILLMENT_STATUS_OPTIONS"
-            :key="option.value"
-            :label="option.label"
-            :value="option.value"
-          />
-        </el-select>
-        <el-button @click="load">刷新</el-button>
+          {{ option.label }}
+        </button>
+        <el-button class="filter-bar__refresh" text @click="load">
+          <el-icon><Refresh /></el-icon>
+          <span>刷新</span>
+        </el-button>
       </div>
 
       <el-table v-loading="loading" :data="orders" row-key="order_id">
         <el-table-column label="订单号" min-width="180">
           <template #default="{ row }">
             <el-link type="primary" :underline="false" @click="goDetail(row)">
-              {{ row.order_no }}
+              <span class="mono">{{ row.order_no }}</span>
             </el-link>
           </template>
         </el-table-column>
@@ -254,7 +268,9 @@ onMounted(load)
               确认收货
             </el-button>
 
-            <el-button v-if="hasLogistics(row)" link @click="viewLogistics(row)">查看物流</el-button>
+            <el-button v-if="hasLogistics(row)" link @click="viewLogistics(row)"
+              >查看物流</el-button
+            >
 
             <el-button v-if="canApplyAfterSale(row)" link @click="applyAfterSale(row)">
               申请售后

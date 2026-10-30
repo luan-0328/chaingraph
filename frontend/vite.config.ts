@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 // 后端地址（FastAPI）：uvicorn app.main:app 默认跑在 8000
-const BACKEND = 'http://127.0.0.1:8000'
+const BACKEND = process.env.VITE_DEV_API_TARGET || 'http://127.0.0.1:8000'
 
 export default defineConfig({
   plugins: [vue()],

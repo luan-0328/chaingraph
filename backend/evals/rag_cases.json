@@ -1,0 +1,565 @@
+{
+  "description": "人工编写的开发评测集；标签指向仓库规则原文，仅评测检索，不验证规则合法性或回答质量。不是独立留出测试集。",
+  "cases": [
+    {
+      "id": "policy-001",
+      "query": "没付款能退款吗？",
+      "relevant": [
+        {
+          "source": "refund_policy.md",
+          "contains": "未支付订单不产生退款"
+        }
+      ]
+    },
+    {
+      "id": "policy-002",
+      "query": "订单还没发货，能全额退款吗？",
+      "relevant": [
+        {
+          "source": "refund_policy.md",
+          "contains": "用户可以申请全额退款"
+        }
+      ]
+    },
+    {
+      "id": "policy-003",
+      "query": "已经发货的订单能自动退钱吗？",
+      "relevant": [
+        {
+          "source": "refund_policy.md",
+          "contains": "退款申请不能自动通过"
+        }
+      ]
+    },
+    {
+      "id": "policy-004",
+      "query": "自动退款最多能退多少元？",
+      "relevant": [
+        {
+          "source": "refund_policy.md",
+          "contains": "自动批准的退款金额上限"
+        }
+      ]
+    },
+    {
+      "id": "policy-005",
+      "query": "我的会员等级很高，能突破自动退款上限吗？",
+      "relevant": [
+        {
+          "source": "refund_policy.md",
+          "contains": "与用户的会员等级"
+        }
+      ]
+    },
+    {
+      "id": "policy-006",
+      "query": "可以帮朋友申请退款吗？",
+      "relevant": [
+        {
+          "source": "refund_policy.md",
+          "contains": "不允许代他人申请退款"
+        }
+      ]
+    },
+    {
+      "id": "policy-007",
+      "query": "退款记录的SUCCESS是什么意思？",
+      "relevant": [
+        {
+          "source": "refund_policy.md",
+          "contains": "SUCCESS 表示退款成功"
+        }
+      ]
+    },
+    {
+      "id": "policy-008",
+      "query": "七天无理由从下单开始算吗？",
+      "relevant": [
+        {
+          "source": "seven_day_policy.md",
+          "contains": "不是下单时间或发货时间"
+        }
+      ]
+    },
+    {
+      "id": "policy-009",
+      "query": "退货时赠品和配件也要齐全吗？",
+      "relevant": [
+        {
+          "source": "seven_day_policy.md",
+          "contains": "赠品"
+        }
+      ]
+    },
+    {
+      "id": "policy-010",
+      "query": "刻字定制的商品支持七天无理由吗？",
+      "relevant": [
+        {
+          "source": "seven_day_policy.md",
+          "contains": "定制类商品"
+        }
+      ]
+    },
+    {
+      "id": "policy-011",
+      "query": "无理由退货的寄回运费谁承担？",
+      "relevant": [
+        {
+          "source": "seven_day_policy.md",
+          "contains": "寄回运费由用户承担"
+        }
+      ]
+    },
+    {
+      "id": "policy-012",
+      "query": "退回商品后商家多久验收？",
+      "relevant": [
+        {
+          "source": "seven_day_policy.md",
+          "contains": "3 个工作日内完成验收"
+        }
+      ]
+    },
+    {
+      "id": "policy-013",
+      "query": "商品已经清洗过还能无理由退货吗？",
+      "relevant": [
+        {
+          "source": "seven_day_policy.md",
+          "contains": "被清洗"
+        }
+      ]
+    },
+    {
+      "id": "policy-014",
+      "query": "退货时商家发现缺少配件怎么办？",
+      "relevant": [
+        {
+          "source": "seven_day_policy.md",
+          "contains": "缺少配件"
+        }
+      ]
+    },
+    {
+      "id": "policy-015",
+      "query": "售后申请单和退款流水有什么区别？",
+      "relevant": [
+        {
+          "source": "after_sale_policy.md",
+          "contains": "售后单（AfterSale）"
+        }
+      ]
+    },
+    {
+      "id": "policy-016",
+      "query": "售后状态CANCELLED代表什么？",
+      "relevant": [
+        {
+          "source": "after_sale_policy.md",
+          "contains": "用户主动撤销申请"
+        }
+      ]
+    },
+    {
+      "id": "policy-017",
+      "query": "售后申请多久给初审结论？",
+      "relevant": [
+        {
+          "source": "after_sale_policy.md",
+          "contains": "24 小时内给出初审结论"
+        }
+      ]
+    },
+    {
+      "id": "policy-018",
+      "query": "纯咨询的工单必须关联售后单吗？",
+      "relevant": [
+        {
+          "source": "after_sale_policy.md",
+          "contains": "纯咨询类问题"
+        }
+      ]
+    },
+    {
+      "id": "policy-019",
+      "query": "同一张售后单能关联多个工单吗？",
+      "relevant": [
+        {
+          "source": "after_sale_policy.md",
+          "contains": "一个售后单可以关联多个工单"
+        }
+      ]
+    },
+    {
+      "id": "policy-020",
+      "query": "解决工单和关闭工单一样吗？",
+      "relevant": [
+        {
+          "source": "after_sale_policy.md",
+          "contains": "解决与关闭是两个不同动作"
+        }
+      ]
+    },
+    {
+      "id": "policy-021",
+      "query": "售后有哪些状态？",
+      "relevant": [
+        {
+          "source": "after_sale_policy.md",
+          "contains": "APPLYING："
+        }
+      ]
+    },
+    {
+      "id": "policy-022",
+      "query": "收到的杯子破了，要提交什么凭证？",
+      "relevant": [
+        {
+          "source": "damaged_goods_policy.md",
+          "contains": "照片凭证"
+        }
+      ]
+    },
+    {
+      "id": "policy-023",
+      "query": "破损照片应在签收后多久提供？",
+      "relevant": [
+        {
+          "source": "damaged_goods_policy.md",
+          "contains": "48 小时内提交"
+        }
+      ]
+    },
+    {
+      "id": "policy-024",
+      "query": "键盘用了45天坏了还能退款吗？",
+      "relevant": [
+        {
+          "source": "damaged_goods_policy.md",
+          "contains": "超过 30 天"
+        }
+      ]
+    },
+    {
+      "id": "policy-025",
+      "query": "商品损坏但只有100元，可以自动退款吗？",
+      "relevant": [
+        {
+          "source": "damaged_goods_policy.md",
+          "contains": "不能走自动退款通道"
+        }
+      ]
+    },
+    {
+      "id": "policy-026",
+      "query": "我自己拆修弄坏的商品能退吗？",
+      "relevant": [
+        {
+          "source": "damaged_goods_policy.md",
+          "contains": "私自拆修"
+        }
+      ]
+    },
+    {
+      "id": "policy-027",
+      "query": "质量问题寄回检测最长多久？",
+      "relevant": [
+        {
+          "source": "damaged_goods_policy.md",
+          "contains": "检测周期最长 7 天"
+        }
+      ]
+    },
+    {
+      "id": "policy-028",
+      "query": "缺少照片能直接认定商品损坏吗？",
+      "relevant": [
+        {
+          "source": "damaged_goods_policy.md",
+          "contains": "缺少照片凭证"
+        }
+      ]
+    },
+    {
+      "id": "policy-029",
+      "query": "换货时同款缺货怎么办？",
+      "relevant": [
+        {
+          "source": "exchange_policy.md",
+          "contains": "同款缺货时可协商"
+        }
+      ]
+    },
+    {
+      "id": "policy-030",
+      "query": "原商品涨价了，换同款要补差价吗？",
+      "relevant": [
+        {
+          "source": "exchange_policy.md",
+          "contains": "不因商品涨价要求用户补差价"
+        }
+      ]
+    },
+    {
+      "id": "policy-031",
+      "query": "换成更贵的商品，差价谁出？",
+      "relevant": [
+        {
+          "source": "exchange_policy.md",
+          "contains": "超出部分的差价由用户承担"
+        }
+      ]
+    },
+    {
+      "id": "policy-032",
+      "query": "个人原因换货，寄回运费谁付？",
+      "relevant": [
+        {
+          "source": "exchange_policy.md",
+          "contains": "寄回运费由用户承担"
+        }
+      ]
+    },
+    {
+      "id": "policy-033",
+      "query": "换货商品验收后多久寄出？",
+      "relevant": [
+        {
+          "source": "exchange_policy.md",
+          "contains": "3 个工作日内寄出换货商品"
+        }
+      ]
+    },
+    {
+      "id": "policy-034",
+      "query": "一个商品可以重复换货很多次吗？",
+      "relevant": [
+        {
+          "source": "exchange_policy.md",
+          "contains": "换货只允许进行一次"
+        }
+      ]
+    },
+    {
+      "id": "policy-035",
+      "query": "换货业务一定产生退款流水吗？",
+      "relevant": [
+        {
+          "source": "exchange_policy.md",
+          "contains": "换货业务不产生退款记录"
+        }
+      ]
+    },
+    {
+      "id": "policy-036",
+      "query": "物流多久没有更新算停滞？",
+      "relevant": [
+        {
+          "source": "logistics_policy.md",
+          "contains": "超过 72 小时"
+        }
+      ]
+    },
+    {
+      "id": "policy-037",
+      "query": "物流停滞从哪个时间点开始算？",
+      "relevant": [
+        {
+          "source": "logistics_policy.md",
+          "contains": "最近一次物流更新记录"
+        }
+      ]
+    },
+    {
+      "id": "policy-038",
+      "query": "快递显示签收但没收到怎么办？",
+      "relevant": [
+        {
+          "source": "logistics_policy.md",
+          "contains": "按未收货核查流程处理"
+        }
+      ]
+    },
+    {
+      "id": "policy-039",
+      "query": "承运方需要多久给核查反馈？",
+      "relevant": [
+        {
+          "source": "logistics_policy.md",
+          "contains": "48 小时内给出书面反馈"
+        }
+      ]
+    },
+    {
+      "id": "policy-040",
+      "query": "确定丢件后我可以选择补发吗？",
+      "relevant": [
+        {
+          "source": "logistics_policy.md",
+          "contains": "用户可以选择补发或退款"
+        }
+      ]
+    },
+    {
+      "id": "policy-041",
+      "query": "物流两天不动就算丢件吗？",
+      "relevant": [
+        {
+          "source": "logistics_policy.md",
+          "contains": "禁止在物流仅停滞 72 小时以内时直接认定丢件"
+        }
+      ]
+    },
+    {
+      "id": "policy-042",
+      "query": "包裹超区无法派送算异常吗？",
+      "relevant": [
+        {
+          "source": "logistics_policy.md",
+          "contains": "超区无法派送"
+        }
+      ]
+    },
+    {
+      "id": "policy-043",
+      "query": "正常付款后多久发货？",
+      "relevant": [
+        {
+          "source": "shipping_policy.md",
+          "contains": "支付成功后 48 小时"
+        }
+      ]
+    },
+    {
+      "id": "policy-044",
+      "query": "发货时限包括周末吗？",
+      "relevant": [
+        {
+          "source": "shipping_policy.md",
+          "contains": "包含周末与节假日"
+        }
+      ]
+    },
+    {
+      "id": "policy-045",
+      "query": "预售商品也是48小时发货吗？",
+      "relevant": [
+        {
+          "source": "shipping_policy.md",
+          "contains": "预售商品不适用 48 小时发货时限"
+        }
+      ]
+    },
+    {
+      "id": "policy-046",
+      "query": "备货时发现库存不足多久联系用户？",
+      "relevant": [
+        {
+          "source": "shipping_policy.md",
+          "contains": "24 小时内联系用户"
+        }
+      ]
+    },
+    {
+      "id": "policy-047",
+      "query": "超时未发货的补偿怎么算？",
+      "relevant": [
+        {
+          "source": "shipping_policy.md",
+          "contains": "实付金额的 5%"
+        }
+      ]
+    },
+    {
+      "id": "policy-048",
+      "query": "超时补偿直接退现金吗？",
+      "relevant": [
+        {
+          "source": "shipping_policy.md",
+          "contains": "不直接退还现金"
+        }
+      ]
+    },
+    {
+      "id": "policy-049",
+      "query": "物流单号生成后多久要有揽收记录？",
+      "relevant": [
+        {
+          "source": "shipping_policy.md",
+          "contains": "24 小时内应产生第一条揽收记录"
+        }
+      ]
+    },
+    {
+      "id": "unknown-001",
+      "query": "怎么重置登录密码？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-002",
+      "query": "能开增值税专用发票吗？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-003",
+      "query": "支付宝分期付款利息是多少？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-004",
+      "query": "你们的会员积分怎么兑换？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-005",
+      "query": "跨境进口关税谁来支付？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-006",
+      "query": "商品支持以旧换新吗？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-007",
+      "query": "如何注销账号并删除个人资料？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-008",
+      "query": "帮我查询北京今天的天气。",
+      "relevant": []
+    },
+    {
+      "id": "unknown-009",
+      "query": "请写一段Python排序代码。",
+      "relevant": []
+    },
+    {
+      "id": "unknown-010",
+      "query": "有没有学生折扣？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-011",
+      "query": "礼品卡过期后怎么续期？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-012",
+      "query": "优惠券能和满减叠加吗？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-013",
+      "query": "企业批量采购有什么折扣？",
+      "relevant": []
+    },
+    {
+      "id": "unknown-014",
+      "query": "如何修改绑定的手机号？",
+      "relevant": []
+    }
+  ]
+}

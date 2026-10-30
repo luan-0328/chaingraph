@@ -23,7 +23,7 @@ def main():
                 raise RuntimeError(f"测试端口 {port} 已被占用，拒绝复用未知实例")
     name = "agent_review_" + uuid.uuid4().hex
     original = make_url(settings.database_url)
-    server = create_engine(original.set(database=None), isolation_level="AUTOCOMMIT")
+    server = create_engine(original._replace(database=None), isolation_level="AUTOCOMMIT")
     with tempfile.TemporaryDirectory(prefix="agent_review_") as folder:
         env = os.environ.copy()
         env.update(DATABASE_URL=original.set(database=name).render_as_string(hide_password=False),

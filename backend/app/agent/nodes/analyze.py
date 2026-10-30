@@ -6,7 +6,9 @@
     图根据 decision 的布尔开关走条件边 —— 流程仍然由程序定义。
 """
 
-from app.agent.events import emit_event
+import asyncio
+
+from app.agent.events import aemit_event
 from app.agent.llm import ainvoke_structured
 from app.agent.prompts import ANALYZE_SYSTEM_PROMPT
 from app.agent.schemas import AgentDecision
@@ -23,7 +25,7 @@ async def analyze_ticket(state: AgentState) -> dict:
     ticket_id = state["ticket_id"]
     agent_run_id = state.get("agent_run_id")
 
-    emit_event(
+    await aemit_event(
         agent_run_id=agent_run_id,
         ticket_id=ticket_id,
         event_type=AgentEventType.ANALYZING,
@@ -53,6 +55,11 @@ async def analyze_ticket(state: AgentState) -> dict:
         logger.exception("analyze_ticket 调用 LLM 失败：ticket_id=%s", ticket_id)
         raise AgentExecutionError(f"工单分析失败：{exc}") from exc
 
+    if decision.request_human:
+        from app.services.handoff_service import request_from_agent
+        await asyncio.to_thread(request_from_agent, ticket_id=ticket_id,
+            reason="识别到用户希望真人接手交流：" + decision.summary, decision=decision.model_dump())
+
     logger.info(
         "决策结果：ticket_id=%s type=%s retrieval=%s order=%s logistics=%s after_sale=%s auto=%s human=%s",
         ticket_id,
@@ -65,7 +72,7 @@ async def analyze_ticket(state: AgentState) -> dict:
         decision.need_human,
     )
 
-    emit_event(
+    await aemit_event(
         agent_run_id=agent_run_id,
         ticket_id=ticket_id,
         event_type=AgentEventType.DECIDED,

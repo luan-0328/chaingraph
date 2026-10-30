@@ -201,6 +201,13 @@ def count_by_status(db: Session) -> dict[str, int]:
     return {status: int(count) for status, count in rows}
 
 
+def compare_assignment(db: Session, ticket_id: int, expected: int | None, assignee_id: int | None) -> bool:
+    """原子比较并更新归属：只有归属仍与校验时一致的请求才能领取、释放或转派。"""
+    condition = Ticket.assignee_id.is_(None) if expected is None else Ticket.assignee_id == expected
+    result = db.execute(update(Ticket).where(Ticket.id == ticket_id, condition).values(assignee_id=assignee_id))
+    return result.rowcount == 1
+
+
 def assign_ticket(
     db: Session,
     ticket_id: int,

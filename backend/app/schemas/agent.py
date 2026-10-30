@@ -29,6 +29,7 @@ class AgentDecisionSchema(BaseModel):
     issue_type: IssueType = Field(..., description="问题类型，必须是给定取值之一")
     summary: str = Field(..., description="对用户问题的简短复述")
     request_kind: Literal["CONSULTATION", "ACTION", "UNKNOWN"] = "UNKNOWN"
+    request_human: bool = Field(default=False, description="用户明确希望真人接手并继续交流；不等同于业务方案需人工审批")
     need_retrieval: bool = False
     need_order_query: bool = False
     need_logistics_query: bool = False

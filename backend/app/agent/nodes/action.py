@@ -52,6 +52,7 @@ async def execute_action(state: AgentState) -> dict:
 
 
 def _execute_action(state: AgentState) -> dict:
+    """在线程中完成业务动作、幂等核对和工单收尾。"""
     ticket_id = state["ticket_id"]
     agent_run_id = state.get("agent_run_id")
     result = state.get("result") or {}
@@ -107,6 +108,10 @@ def _execute_action(state: AgentState) -> dict:
     # ---- ③ 把结论写进工单对话 + 推进状态 ----
     solution = result.get("solution") or result.get("summary") or "已处理完成"
     if action and not action_result.get("success", True):
+        from app.services.handoff_service import request_from_agent
+        request_from_agent(ticket_id=ticket_id,
+            reason=f"业务动作无法自动完成，请人工核实：{action_result.get('error') or '结果未知'}",
+            result=result, decision=decision)
         # 业务规则拒绝（例如状态不符）→ 转人工，别把用户晾着
         status = "WAITING_HUMAN"
         ticket_service.mark_waiting_human(ticket_id)
@@ -151,6 +156,7 @@ def _execute_action(state: AgentState) -> dict:
 
 
 def _cancel_with_idempotency_guard(state: AgentState) -> dict:
+    """核对取消订单的既有结果，避免恢复时重复执行副作用。"""
     order_id = state.get("order_id")
     if order_id is None:
         return {"success": False, "executed": False, "error": "ORDER_REQUIRED",

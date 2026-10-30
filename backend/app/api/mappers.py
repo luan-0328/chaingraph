@@ -154,6 +154,7 @@ def after_sale_info(sale: dict) -> dict:
 # ======================================================================
 def message_info(message: dict) -> dict:
     return {
+        "attachments": message.get("attachments", []),
         "message_id": message["id"],
         "ticket_id": message["ticket_id"],
         "sender_type": message.get("sender_type"),
@@ -172,7 +173,22 @@ def event_info(event: dict) -> dict:
 
 
 def agent_run_info(run: dict) -> dict:
+    from app.agent.version import compatible
+    from app.core.time import utcnow
+    blocked_reason = None
+    if run.get("status") == "WAITING_HUMAN":
+        if not compatible(run):
+            blocked_reason = "方案版本与当前系统不兼容，请使用原版本处理或人工接管"
+        elif run.get("review_deadline_at") is None or run["review_deadline_at"] <= utcnow():
+            blocked_reason = "审批方案已过期，请由客服接管"
     return {
+        "approval_available": run.get("status") == "WAITING_HUMAN" and blocked_reason is None,
+        "approval_blocked_reason": blocked_reason,
+        "flow_version": run.get("flow_version"),
+        "execution_spec": run.get("execution_spec"),
+        "review_requested_at": run.get("review_requested_at"),
+        "review_deadline_at": run.get("review_deadline_at"),
+        "review_reminded_at": run.get("review_reminded_at"),
         "review_round": run.get("review_round", 0),
         "review_payload": run.get("review_payload"),
         "execution_epoch": run.get("execution_epoch", 0),
@@ -197,6 +213,10 @@ def agent_run_info(run: dict) -> dict:
 
 def ticket_summary(ticket: dict) -> dict:
     return {
+        "unread_count": ticket.get("unread_count", 0),
+        "handling_mode": ticket.get("handling_mode", "AGENT"),
+        "handoff_reason": ticket.get("handoff_reason"),
+        "handoff_requested_at": ticket.get("handoff_requested_at"),
         "ticket_id": ticket["id"],
         "ticket_no": ticket["ticket_no"],
         "user_id": ticket["user_id"],

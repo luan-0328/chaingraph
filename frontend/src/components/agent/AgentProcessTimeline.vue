@@ -31,7 +31,9 @@ const hasEvents = computed(() => props.events.length > 0)
   <div class="agent-timeline">
     <div class="agent-timeline__header">
       <span class="agent-timeline__title">Agent 处理进度</span>
-      <el-tag v-if="live" type="primary" size="small" effect="dark" disable-transitions>实时</el-tag>
+      <el-tag v-if="live" type="primary" size="small" effect="dark" disable-transitions
+        >实时</el-tag
+      >
       <StatusTag v-if="status" :value="status" :map="TICKET_STATUS_MAP" />
     </div>
 
@@ -57,7 +59,7 @@ const hasEvents = computed(() => props.events.length > 0)
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .agent-timeline__title {
@@ -67,10 +69,29 @@ const hasEvents = computed(() => props.events.length > 0)
 
 .agent-timeline__step {
   font-weight: 600;
+  font-size: 13.5px;
 }
 
 .agent-timeline__message {
   color: var(--text-regular);
-  font-size: 13px;
+  font-size: 12.5px;
+  margin-top: 2px;
+  line-height: 1.6;
+}
+
+/* 每个事件做成一张浅色小卡：事件多的时候比裸文字更容易扫读 */
+.agent-timeline :deep(.el-timeline-item__content) {
+  padding: 10px 12px;
+  border: 1px solid #eef1f7;
+  border-radius: var(--radius-md);
+  background: #fbfcfe;
+}
+
+.agent-timeline :deep(.el-timeline-item__timestamp) {
+  margin-bottom: 4px;
+}
+
+.agent-timeline :deep(.el-timeline-item:last-child) {
+  padding-bottom: 0;
 }
 </style>

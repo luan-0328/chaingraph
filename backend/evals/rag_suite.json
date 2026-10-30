@@ -1,0 +1,3667 @@
+{
+  "schema_version": 2,
+  "description": "人工编写开发/回归留出集，按意图组分离；同组两种问法永不跨集。部分题源来自已公开的旧63题，test不是严格盲测或真实用户分布。规则只作为本项目演示依据，未做法律审查。",
+  "split_policy": "固定意图组划分；49组dev/21组test；仅在dev选择参数，选择后一次评估test，不据test回调参数。",
+  "cases": [
+    {
+      "id": "policy-001-1",
+      "group_id": "policy-001",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "refund_policy.md",
+      "query": "没付款能退款吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-001",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "未支付订单不产生退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "未支付订单不能退款，只能按订单规则取消。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-001-2",
+      "group_id": "policy-001",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "refund_policy.md",
+      "query": "订单还没有付钱，我是不是只能取消，不能退钱？",
+      "evidence_groups": [
+        {
+          "id": "policy-001",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "未支付订单不产生退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "未支付订单不能退款，只能按订单规则取消。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-002-1",
+      "group_id": "policy-002",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "refund_policy.md",
+      "query": "订单还没发货，能全额退款吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-002",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "用户可以申请全额退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "已支付未发货可以申请全额退款，但还需满足归属、默认500元上限和无重复退款等条件。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-002-2",
+      "group_id": "policy-002",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "refund_policy.md",
+      "query": "刚付完款，店家还没寄，整单的钱能退回来吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-002",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "用户可以申请全额退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "已支付未发货可以申请全额退款，但还需满足归属、默认500元上限和无重复退款等条件。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-003-1",
+      "group_id": "policy-003",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "refund_policy.md",
+      "query": "已经发货的订单能自动退钱吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-003",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款申请不能自动通过"
+            },
+            {
+              "source": "after_sale_policy.md",
+              "contains": "订单已发货。"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "已发货订单不能自动退款，必须由客服核实并人工审批。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-003-2",
+      "group_id": "policy-003",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "refund_policy.md",
+      "query": "包裹已经寄出了，机器人还可以直接退钱吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-003",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款申请不能自动通过"
+            },
+            {
+              "source": "after_sale_policy.md",
+              "contains": "订单已发货。"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "已发货订单不能自动退款，必须由客服核实并人工审批。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-004-1",
+      "group_id": "policy-004",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "refund_policy.md",
+      "query": "自动退款最多能退多少元？",
+      "evidence_groups": [
+        {
+          "id": "policy-004",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "自动批准的退款金额上限"
+            },
+            {
+              "source": "after_sale_policy.md",
+              "contains": "退款金额超过 500 元。"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "默认自动退款上限为500元，含500元；还需满足其他业务条件，实际以服务配置为准。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-004-2",
+      "group_id": "policy-004",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "refund_policy.md",
+      "query": "多少钱以内才可以让系统自己退？",
+      "evidence_groups": [
+        {
+          "id": "policy-004",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "自动批准的退款金额上限"
+            },
+            {
+              "source": "after_sale_policy.md",
+              "contains": "退款金额超过 500 元。"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "默认自动退款上限为500元，含500元；还需满足其他业务条件，实际以服务配置为准。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-005-1",
+      "group_id": "policy-005",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "refund_policy.md",
+      "query": "我的会员等级很高，能突破自动退款上限吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-005",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "与用户的会员等级"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "会员等级和历史订单数量不能突破自动退款上限。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-005-2",
+      "group_id": "policy-005",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "refund_policy.md",
+      "query": "我是老客户，就不能多给我退一点免审核吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-005",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "与用户的会员等级"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "会员等级和历史订单数量不能突破自动退款上限。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-006-1",
+      "group_id": "policy-006",
+      "split": "test",
+      "kind": "direct",
+      "topic": "refund_policy.md",
+      "query": "可以帮朋友申请退款吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-006",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "不允许代他人申请退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "不能替他人申请退款，订单必须属于当前用户。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-006-2",
+      "group_id": "policy-006",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "refund_policy.md",
+      "query": "我想替别人把那笔订单的钱退了，行不行？",
+      "evidence_groups": [
+        {
+          "id": "policy-006",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "不允许代他人申请退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "不能替他人申请退款，订单必须属于当前用户。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-007-1",
+      "group_id": "policy-007",
+      "split": "test",
+      "kind": "direct",
+      "topic": "refund_policy.md",
+      "query": "退款记录的SUCCESS是什么意思？",
+      "evidence_groups": [
+        {
+          "id": "policy-007",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "SUCCESS 表示退款成功"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "SUCCESS代表本系统退款流水处理成功；当前是模拟业务，不代表真实银行到账。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-007-2",
+      "group_id": "policy-007",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "refund_policy.md",
+      "query": "退款流水显示SUCCESS，是办好了还是还在等？",
+      "evidence_groups": [
+        {
+          "id": "policy-007",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "SUCCESS 表示退款成功"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "SUCCESS代表本系统退款流水处理成功；当前是模拟业务，不代表真实银行到账。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-008-1",
+      "group_id": "policy-008",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "seven_day_policy.md",
+      "query": "七天无理由从下单开始算吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-008",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "不是下单时间或发货时间"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "七天无理由期限按签收时间起算，不是下单或发货时间；退货由客服人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-008-2",
+      "group_id": "policy-008",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "seven_day_policy.md",
+      "query": "七天是从买东西那天算，还是收到快递那天算？",
+      "evidence_groups": [
+        {
+          "id": "policy-008",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "不是下单时间或发货时间"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "七天无理由期限按签收时间起算，不是下单或发货时间；退货由客服人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-009-1",
+      "group_id": "policy-009",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "seven_day_policy.md",
+      "query": "退货时赠品和配件也要齐全吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-009",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "赠品"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "商品、配件、赠品、说明书和保修卡需齐全，退货由客服核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-009-2",
+      "group_id": "policy-009",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "seven_day_policy.md",
+      "query": "赠送的小东西也得一起寄回去吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-009",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "赠品"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "商品、配件、赠品、说明书和保修卡需齐全，退货由客服核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-010-1",
+      "group_id": "policy-010",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "seven_day_policy.md",
+      "query": "刻字定制的商品支持七天无理由吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-010",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "定制类商品"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "定制类商品不适用七天无理由退货；有质量问题可转客服核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-010-2",
+      "group_id": "policy-010",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "seven_day_policy.md",
+      "query": "手链刻了我的名字，反悔了能无理由退吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-010",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "定制类商品"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "定制类商品不适用七天无理由退货；有质量问题可转客服核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-011-1",
+      "group_id": "policy-011",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "seven_day_policy.md",
+      "query": "无理由退货的寄回运费谁承担？",
+      "evidence_groups": [
+        {
+          "id": "policy-011",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "寄回运费由用户承担"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，个人原因七天无理由退货的寄回运费由用户承担。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-011-2",
+      "group_id": "policy-011",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "seven_day_policy.md",
+      "query": "不是质量问题，就是不喜欢，寄回去的钱谁付？",
+      "evidence_groups": [
+        {
+          "id": "policy-011",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "寄回运费由用户承担"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，个人原因七天无理由退货的寄回运费由用户承担。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-012-1",
+      "group_id": "policy-012",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "seven_day_policy.md",
+      "query": "退回商品后商家多久验收？",
+      "evidence_groups": [
+        {
+          "id": "policy-012",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "3 个工作日内完成验收"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，商家收到退货后应在3个工作日内完成验收；当前由客服人工处理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-012-2",
+      "group_id": "policy-012",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "seven_day_policy.md",
+      "query": "商家拿到我寄回去的东西，要等几天检查完？",
+      "evidence_groups": [
+        {
+          "id": "policy-012",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "3 个工作日内完成验收"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，商家收到退货后应在3个工作日内完成验收；当前由客服人工处理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-013-1",
+      "group_id": "policy-013",
+      "split": "test",
+      "kind": "direct",
+      "topic": "seven_day_policy.md",
+      "query": "商品已经清洗过还能无理由退货吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-013",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "被清洗"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "被清洗、使用或改装等影响完好的商品不满足无理由退货条件，需由客服核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-013-2",
+      "group_id": "policy-013",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "seven_day_policy.md",
+      "query": "衣服已经洗过一次，不想留了还能无理由退吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-013",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "被清洗"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "被清洗、使用或改装等影响完好的商品不满足无理由退货条件，需由客服核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-014-1",
+      "group_id": "policy-014",
+      "split": "test",
+      "kind": "direct",
+      "topic": "seven_day_policy.md",
+      "query": "退货时商家发现缺少配件怎么办？",
+      "evidence_groups": [
+        {
+          "id": "policy-014",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "缺少配件"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "缺少配件可能导致拒绝退款，客服应说明差异；有争议可申请人工复核。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-014-2",
+      "group_id": "policy-014",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "seven_day_policy.md",
+      "query": "寄回的盒子少了一件配件，商家会怎么处理？",
+      "evidence_groups": [
+        {
+          "id": "policy-014",
+          "any_of": [
+            {
+              "source": "seven_day_policy.md",
+              "contains": "缺少配件"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "缺少配件可能导致拒绝退款，客服应说明差异；有争议可申请人工复核。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-015-1",
+      "group_id": "policy-015",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "after_sale_policy.md",
+      "query": "售后申请单和退款流水有什么区别？",
+      "evidence_groups": [
+        {
+          "id": "policy-015",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "售后单（AfterSale）"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "售后单表达用户的申请，退款记录表达退款流水；申请或审批通过不等于退款已经执行成功。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-015-2",
+      "group_id": "policy-015",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "after_sale_policy.md",
+      "query": "售后申请通过，是不是就等于已经有退款流水？",
+      "evidence_groups": [
+        {
+          "id": "policy-015",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "售后单（AfterSale）"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "售后单表达用户的申请，退款记录表达退款流水；申请或审批通过不等于退款已经执行成功。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-016-1",
+      "group_id": "policy-016",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "after_sale_policy.md",
+      "query": "售后状态CANCELLED代表什么？",
+      "evidence_groups": [
+        {
+          "id": "policy-016",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "用户主动撤销申请"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "CANCELLED表示用户主动撤销售后申请。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-016-2",
+      "group_id": "policy-016",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "after_sale_policy.md",
+      "query": "申请显示CANCELLED，是我撤回的意思吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-016",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "用户主动撤销申请"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "CANCELLED表示用户主动撤销售后申请。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-017-1",
+      "group_id": "policy-017",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "after_sale_policy.md",
+      "query": "售后申请多久给初审结论？",
+      "evidence_groups": [
+        {
+          "id": "policy-017",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "24 小时内给出初审结论"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目规则要求售后提交后24小时内给出初审结论，不代表系统已自动完成初审。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-017-2",
+      "group_id": "policy-017",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "after_sale_policy.md",
+      "query": "售后提交以后多久应该有人给初审意见？",
+      "evidence_groups": [
+        {
+          "id": "policy-017",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "24 小时内给出初审结论"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目规则要求售后提交后24小时内给出初审结论，不代表系统已自动完成初审。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-018-1",
+      "group_id": "policy-018",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "after_sale_policy.md",
+      "query": "纯咨询的工单必须关联售后单吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-018",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "纯咨询类问题"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "纯咨询工单可以不关联售后单，不必先申请售后。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-018-2",
+      "group_id": "policy-018",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "after_sale_policy.md",
+      "query": "只想问个规则，也得先申请售后才能提工单？",
+      "evidence_groups": [
+        {
+          "id": "policy-018",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "纯咨询类问题"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "纯咨询工单可以不关联售后单，不必先申请售后。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-019-1",
+      "group_id": "policy-019",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "after_sale_policy.md",
+      "query": "同一张售后单能关联多个工单吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-019",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "一个售后单可以关联多个工单"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "一个售后单可以关联多个工单，用于咨询或后续跟进。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-019-2",
+      "group_id": "policy-019",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "after_sale_policy.md",
+      "query": "一张售后申请后续追问，可以再开一张工单吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-019",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "一个售后单可以关联多个工单"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "一个售后单可以关联多个工单，用于咨询或后续跟进。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-020-1",
+      "group_id": "policy-020",
+      "split": "test",
+      "kind": "direct",
+      "topic": "after_sale_policy.md",
+      "query": "解决工单和关闭工单一样吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-020",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "解决与关闭是两个不同动作"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "解决和关闭是不同动作，工单可先标记已解决再关闭。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-020-2",
+      "group_id": "policy-020",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "after_sale_policy.md",
+      "query": "问题已解决和工单已关闭，系统里是一回事吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-020",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "解决与关闭是两个不同动作"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "解决和关闭是不同动作，工单可先标记已解决再关闭。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-021-1",
+      "group_id": "policy-021",
+      "split": "test",
+      "kind": "direct",
+      "topic": "after_sale_policy.md",
+      "query": "售后有哪些状态？",
+      "evidence_groups": [
+        {
+          "id": "policy-021",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "APPLYING："
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "售后状态包括申请中APPLYING、处理中PROCESSING、已批准APPROVED、已拒绝REJECTED、已完成COMPLETED和已撤销CANCELLED。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-021-2",
+      "group_id": "policy-021",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "after_sale_policy.md",
+      "query": "APPLYING和PROCESSING这些售后状态都是什么意思？",
+      "evidence_groups": [
+        {
+          "id": "policy-021",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "APPLYING："
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "售后状态包括申请中APPLYING、处理中PROCESSING、已批准APPROVED、已拒绝REJECTED、已完成COMPLETED和已撤销CANCELLED。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-022-1",
+      "group_id": "policy-022",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "damaged_goods_policy.md",
+      "query": "收到的杯子破了，要提交什么凭证？",
+      "evidence_groups": [
+        {
+          "id": "policy-022",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "照片凭证"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "破损需要提供清楚展示破损部位与包装的照片，建议开箱视频；当前Agent不能识别图片，需人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-022-2",
+      "group_id": "policy-022",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "damaged_goods_policy.md",
+      "query": "杯子到手已经碎了，我需要拍什么给你们？",
+      "evidence_groups": [
+        {
+          "id": "policy-022",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "照片凭证"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "破损需要提供清楚展示破损部位与包装的照片，建议开箱视频；当前Agent不能识别图片，需人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-023-1",
+      "group_id": "policy-023",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "damaged_goods_policy.md",
+      "query": "破损照片应在签收后多久提供？",
+      "evidence_groups": [
+        {
+          "id": "policy-023",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "48 小时内提交"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，破损照片与视频应在签收后48小时内提交，超过时限交客服判断。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-023-2",
+      "group_id": "policy-023",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "damaged_goods_policy.md",
+      "query": "收货后多晚之前要把破损照片发过来？",
+      "evidence_groups": [
+        {
+          "id": "policy-023",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "48 小时内提交"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，破损照片与视频应在签收后48小时内提交，超过时限交客服判断。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-024-1",
+      "group_id": "policy-024",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "damaged_goods_policy.md",
+      "query": "键盘用了45天坏了还能退款吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-024",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "超过 30 天"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目规则下使用超过30天不按退款处理，在保修期内可由客服核实维修或保修。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-024-2",
+      "group_id": "policy-024",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "damaged_goods_policy.md",
+      "query": "键盘用到第四十五天坏掉，退钱还是走维修？",
+      "evidence_groups": [
+        {
+          "id": "policy-024",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "超过 30 天"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目规则下使用超过30天不按退款处理，在保修期内可由客服核实维修或保修。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-025-1",
+      "group_id": "policy-025",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "damaged_goods_policy.md",
+      "query": "商品损坏但只有100元，可以自动退款吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-025",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "不能走自动退款通道"
+            },
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "一律必须人工审核"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "涉及商品损坏即使低于500元也不能自动退款，需要人工审核。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-025-2",
+      "group_id": "policy-025",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "damaged_goods_policy.md",
+      "query": "东西摔坏了，订单才一百块，能免人工直接退吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-025",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "不能走自动退款通道"
+            },
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "一律必须人工审核"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "涉及商品损坏即使低于500元也不能自动退款，需要人工审核。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-026-1",
+      "group_id": "policy-026",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "damaged_goods_policy.md",
+      "query": "我自己拆修弄坏的商品能退吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-026",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "私自拆修"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "人为损坏或私自拆修造成的损坏不予退款或换货，责任由客服核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-026-2",
+      "group_id": "policy-026",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "damaged_goods_policy.md",
+      "query": "自己拆开修过反而弄坏了，还能要求退款吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-026",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "私自拆修"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "人为损坏或私自拆修造成的损坏不予退款或换货，责任由客服核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-027-1",
+      "group_id": "policy-027",
+      "split": "test",
+      "kind": "direct",
+      "topic": "damaged_goods_policy.md",
+      "query": "质量问题寄回检测最长多久？",
+      "evidence_groups": [
+        {
+          "id": "policy-027",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "检测周期最长 7 天"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，寄回检测周期最长7天，超期应说明原因。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-027-2",
+      "group_id": "policy-027",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "damaged_goods_policy.md",
+      "query": "东西寄回检测，最多要等几天？",
+      "evidence_groups": [
+        {
+          "id": "policy-027",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "检测周期最长 7 天"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，寄回检测周期最长7天，超期应说明原因。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-028-1",
+      "group_id": "policy-028",
+      "split": "test",
+      "kind": "direct",
+      "topic": "damaged_goods_policy.md",
+      "query": "缺少照片能直接认定商品损坏吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-028",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "缺少照片凭证"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "缺少照片不能直接认定商品损坏，应补充证据并由人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-028-2",
+      "group_id": "policy-028",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "damaged_goods_policy.md",
+      "query": "我没有拍照片，只说东西坏了，可以直接认定吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-028",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "缺少照片凭证"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "缺少照片不能直接认定商品损坏，应补充证据并由人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-029-1",
+      "group_id": "policy-029",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "exchange_policy.md",
+      "query": "换货时同款缺货怎么办？",
+      "evidence_groups": [
+        {
+          "id": "policy-029",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "同款缺货时可协商"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "换货优先同款同规格，同款缺货时可与客服协商同价其他商品，当前换货由人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-029-2",
+      "group_id": "policy-029",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "exchange_policy.md",
+      "query": "同一个型号没库存了，还能给我换其他款吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-029",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "同款缺货时可协商"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "换货优先同款同规格，同款缺货时可与客服协商同价其他商品，当前换货由人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-030-1",
+      "group_id": "policy-030",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "exchange_policy.md",
+      "query": "原商品涨价了，换同款要补差价吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-030",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "不因商品涨价要求用户补差价"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，换同款不因涨价要求补差价，换货由人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-030-2",
+      "group_id": "policy-030",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "exchange_policy.md",
+      "query": "买的时候便宜，现在涨价了，换同款要加钱吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-030",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "不因商品涨价要求用户补差价"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，换同款不因涨价要求补差价，换货由人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-031-1",
+      "group_id": "policy-031",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "exchange_policy.md",
+      "query": "换成更贵的商品，差价谁出？",
+      "evidence_groups": [
+        {
+          "id": "policy-031",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "超出部分的差价由用户承担"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "用户主动换成更贵商品时，超出差价由用户承担，当前需人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-031-2",
+      "group_id": "policy-031",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "exchange_policy.md",
+      "query": "我主动要换贵一点的，额外的钱谁补？",
+      "evidence_groups": [
+        {
+          "id": "policy-031",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "超出部分的差价由用户承担"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "用户主动换成更贵商品时，超出差价由用户承担，当前需人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-032-1",
+      "group_id": "policy-032",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "exchange_policy.md",
+      "query": "个人原因换货，寄回运费谁付？",
+      "evidence_groups": [
+        {
+          "id": "policy-032",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "寄回运费由用户承担"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，个人原因换货寄回运费由用户承担，商家承担寄出运费。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-032-2",
+      "group_id": "policy-032",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "exchange_policy.md",
+      "query": "只是选错尺码要换，寄回快递费算谁的？",
+      "evidence_groups": [
+        {
+          "id": "policy-032",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "寄回运费由用户承担"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，个人原因换货寄回运费由用户承担，商家承担寄出运费。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-033-1",
+      "group_id": "policy-033",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "exchange_policy.md",
+      "query": "换货商品验收后多久寄出？",
+      "evidence_groups": [
+        {
+          "id": "policy-033",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "3 个工作日内寄出换货商品"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，商家验收换货商品无误后3个工作日内寄出，当前由人工处理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-033-2",
+      "group_id": "policy-033",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "exchange_policy.md",
+      "query": "商家确认换货没问题后，要多久把新的寄出来？",
+      "evidence_groups": [
+        {
+          "id": "policy-033",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "3 个工作日内寄出换货商品"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，商家验收换货商品无误后3个工作日内寄出，当前由人工处理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-034-1",
+      "group_id": "policy-034",
+      "split": "test",
+      "kind": "direct",
+      "topic": "exchange_policy.md",
+      "query": "一个商品可以重复换货很多次吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-034",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "换货只允许进行一次"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目规则只允许同一订单同一商品换货一次，当前由客服人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-034-2",
+      "group_id": "policy-034",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "exchange_policy.md",
+      "query": "同一件商品能不能来回换好几次？",
+      "evidence_groups": [
+        {
+          "id": "policy-034",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "换货只允许进行一次"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目规则只允许同一订单同一商品换货一次，当前由客服人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-035-1",
+      "group_id": "policy-035",
+      "split": "test",
+      "kind": "direct",
+      "topic": "exchange_policy.md",
+      "query": "换货业务一定产生退款流水吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-035",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "换货业务不产生退款记录"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "换货本身不产生退款记录，只有转为退款处理时才产生退款流水。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-035-2",
+      "group_id": "policy-035",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "exchange_policy.md",
+      "query": "换新商品这件事，会不会一定生成一笔退钱记录？",
+      "evidence_groups": [
+        {
+          "id": "policy-035",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "换货业务不产生退款记录"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "换货本身不产生退款记录，只有转为退款处理时才产生退款流水。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-036-1",
+      "group_id": "policy-036",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "logistics_policy.md",
+      "query": "物流多久没有更新算停滞？",
+      "evidence_groups": [
+        {
+          "id": "policy-036",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "超过 72 小时"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "物流轨迹超过72小时无新更新视为停滞异常；停滞不直接等同丢件。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-036-2",
+      "group_id": "policy-036",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "logistics_policy.md",
+      "query": "快递一直不动，停多久才会按异常处理？",
+      "evidence_groups": [
+        {
+          "id": "policy-036",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "超过 72 小时"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "物流轨迹超过72小时无新更新视为停滞异常；停滞不直接等同丢件。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-037-1",
+      "group_id": "policy-037",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "logistics_policy.md",
+      "query": "物流停滞从哪个时间点开始算？",
+      "evidence_groups": [
+        {
+          "id": "policy-037",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "最近一次物流更新记录"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "物流停滞从最近一次轨迹更新时间起算，不是付款或下单时间。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-037-2",
+      "group_id": "policy-037",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "logistics_policy.md",
+      "query": "三天没更新，是从付款还是从最后一条轨迹开始算？",
+      "evidence_groups": [
+        {
+          "id": "policy-037",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "最近一次物流更新记录"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "物流停滞从最近一次轨迹更新时间起算，不是付款或下单时间。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-038-1",
+      "group_id": "policy-038",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "logistics_policy.md",
+      "query": "快递显示签收但没收到怎么办？",
+      "evidence_groups": [
+        {
+          "id": "policy-038",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "按未收货核查流程处理"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "显示签收但未收到属于物流异常，应由客服进行未收货核查。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-038-2",
+      "group_id": "policy-038",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "logistics_policy.md",
+      "query": "页面写签收了，可我手里没有包裹，怎么办？",
+      "evidence_groups": [
+        {
+          "id": "policy-038",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "按未收货核查流程处理"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "显示签收但未收到属于物流异常，应由客服进行未收货核查。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-039-1",
+      "group_id": "policy-039",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "logistics_policy.md",
+      "query": "承运方需要多久给核查反馈？",
+      "evidence_groups": [
+        {
+          "id": "policy-039",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "48 小时内给出书面反馈"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，客服向承运方查询后要求其48小时内书面反馈。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-039-2",
+      "group_id": "policy-039",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "logistics_policy.md",
+      "query": "去问快递公司查件，他们应在多长时间回复？",
+      "evidence_groups": [
+        {
+          "id": "policy-039",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "48 小时内给出书面反馈"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "按本项目规则，客服向承运方查询后要求其48小时内书面反馈。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-040-1",
+      "group_id": "policy-040",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "logistics_policy.md",
+      "query": "确定丢件后我可以选择补发吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-040",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "用户可以选择补发或退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "确认丢件后可选择补发或退款，先由客服核实，当前没有自动补发流程。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-040-2",
+      "group_id": "policy-040",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "logistics_policy.md",
+      "query": "快递公司说丢了，我不想退款，能重新给我发吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-040",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "用户可以选择补发或退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "确认丢件后可选择补发或退款，先由客服核实，当前没有自动补发流程。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-041-1",
+      "group_id": "policy-041",
+      "split": "test",
+      "kind": "direct",
+      "topic": "logistics_policy.md",
+      "query": "物流两天不动就算丢件吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-041",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "禁止在物流仅停滞 72 小时以内时直接认定丢件"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "72小时内没有更新不能直接认定丢件，更不能绕过核查和人工审核退款。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-041-2",
+      "group_id": "policy-041",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "logistics_policy.md",
+      "query": "快递才两天没动，就能说丢件然后退款吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-041",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "禁止在物流仅停滞 72 小时以内时直接认定丢件"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "72小时内没有更新不能直接认定丢件，更不能绕过核查和人工审核退款。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-042-1",
+      "group_id": "policy-042",
+      "split": "test",
+      "kind": "direct",
+      "topic": "logistics_policy.md",
+      "query": "包裹超区无法派送算异常吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-042",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "超区无法派送"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "超区无法派送、被拒收、退回或地址不详属于物流异常，应由客服核查。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-042-2",
+      "group_id": "policy-042",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "logistics_policy.md",
+      "query": "地址超出配送范围送不到，也属于物流异常吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-042",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "超区无法派送"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "超区无法派送、被拒收、退回或地址不详属于物流异常，应由客服核查。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-043-1",
+      "group_id": "policy-043",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "shipping_policy.md",
+      "query": "正常付款后多久发货？",
+      "evidence_groups": [
+        {
+          "id": "policy-043",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "支付成功后 48 小时"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "普通订单按本项目规则在支付成功后48小时内发货，预售或定制按公示约定。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-043-2",
+      "group_id": "policy-043",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "shipping_policy.md",
+      "query": "钱付好以后，通常多少小时要给我寄出？",
+      "evidence_groups": [
+        {
+          "id": "policy-043",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "支付成功后 48 小时"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "普通订单按本项目规则在支付成功后48小时内发货，预售或定制按公示约定。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-044-1",
+      "group_id": "policy-044",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "shipping_policy.md",
+      "query": "发货时限包括周末吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-044",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "包含周末与节假日"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "正常发货的48小时为自然小时，包含周末节假日。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-044-2",
+      "group_id": "policy-044",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "shipping_policy.md",
+      "query": "周六付的钱，正常发货的四十八小时也算周末吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-044",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "包含周末与节假日"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "正常发货的48小时为自然小时，包含周末节假日。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-045-1",
+      "group_id": "policy-045",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "shipping_policy.md",
+      "query": "预售商品也是48小时发货吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-045",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "预售商品不适用 48 小时发货时限"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "预售不适用普通48小时发货要求，应按详情页公示的预计时间判断。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-045-2",
+      "group_id": "policy-045",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "shipping_policy.md",
+      "query": "买的是预售，还能按两天没发货来认定超时吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-045",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "预售商品不适用 48 小时发货时限"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "预售不适用普通48小时发货要求，应按详情页公示的预计时间判断。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-046-1",
+      "group_id": "policy-046",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "shipping_policy.md",
+      "query": "备货时发现库存不足多久联系用户？",
+      "evidence_groups": [
+        {
+          "id": "policy-046",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "24 小时内联系用户"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "备货发现库存不足后，客服应在24小时内联系用户说明选择。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-046-2",
+      "group_id": "policy-046",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "shipping_policy.md",
+      "query": "店里备货才发现缺货，多久该通知我？",
+      "evidence_groups": [
+        {
+          "id": "policy-046",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "24 小时内联系用户"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "备货发现库存不足后，客服应在24小时内联系用户说明选择。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-047-1",
+      "group_id": "policy-047",
+      "split": "dev",
+      "kind": "direct",
+      "topic": "shipping_policy.md",
+      "query": "超时未发货的补偿怎么算？",
+      "evidence_groups": [
+        {
+          "id": "policy-047",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "实付金额的 5%"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目超时发货补偿参考为实付金额5%、单笔上限50元；当前没有自动补偿接口，需人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-047-2",
+      "group_id": "policy-047",
+      "split": "dev",
+      "kind": "paraphrase",
+      "topic": "shipping_policy.md",
+      "query": "普通商品迟迟不寄出，补偿的金额如何计算？",
+      "evidence_groups": [
+        {
+          "id": "policy-047",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "实付金额的 5%"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目超时发货补偿参考为实付金额5%、单笔上限50元；当前没有自动补偿接口，需人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-048-1",
+      "group_id": "policy-048",
+      "split": "test",
+      "kind": "direct",
+      "topic": "shipping_policy.md",
+      "query": "超时补偿直接退现金吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-048",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "不直接退还现金"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目规则中的发货超时补偿以优惠券或红包形式，不直接退现金；当前需客服人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-048-2",
+      "group_id": "policy-048",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "shipping_policy.md",
+      "query": "发货晚了给的赔偿，是直接打现金给我吗？",
+      "evidence_groups": [
+        {
+          "id": "policy-048",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "不直接退还现金"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "本项目规则中的发货超时补偿以优惠券或红包形式，不直接退现金；当前需客服人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-049-1",
+      "group_id": "policy-049",
+      "split": "test",
+      "kind": "direct",
+      "topic": "shipping_policy.md",
+      "query": "物流单号生成后多久要有揽收记录？",
+      "evidence_groups": [
+        {
+          "id": "policy-049",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "24 小时内应产生第一条揽收记录"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "物流单号生成后24小时内应有首条揽收记录，超过需按物流异常核查。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "policy-049-2",
+      "group_id": "policy-049",
+      "split": "test",
+      "kind": "paraphrase",
+      "topic": "shipping_policy.md",
+      "query": "有快递单号了，多久以内应该看到第一次揽收？",
+      "evidence_groups": [
+        {
+          "id": "policy-049",
+          "any_of": [
+            {
+              "source": "shipping_policy.md",
+              "contains": "24 小时内应产生第一条揽收记录"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "grounded_answer",
+      "reference_answer": "物流单号生成后24小时内应有首条揽收记录，超过需按物流异常核查。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-001-1",
+      "group_id": "unknown-001",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "怎么重置登录密码？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-001-2",
+      "group_id": "unknown-001",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "忘了密码要到哪里找回？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-002-1",
+      "group_id": "unknown-002",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "能开增值税专用发票吗？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-002-2",
+      "group_id": "unknown-002",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "公司买东西，能不能给开专票？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-003-1",
+      "group_id": "unknown-003",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "支付宝分期付款利息是多少？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-003-2",
+      "group_id": "unknown-003",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "分期支付每个月额外收多少钱？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-004-1",
+      "group_id": "unknown-004",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "你们的会员积分怎么兑换？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-004-2",
+      "group_id": "unknown-004",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "会员攒的积分要怎么换商品？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-005-1",
+      "group_id": "unknown-005",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "跨境进口关税谁来支付？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-005-2",
+      "group_id": "unknown-005",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "从国外寄来产生的税费怎么算？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-006-1",
+      "group_id": "unknown-006",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "商品支持以旧换新吗？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-006-2",
+      "group_id": "unknown-006",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "旧设备能拿来抵扣新设备的钱吗？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-007-1",
+      "group_id": "unknown-007",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "如何注销账号并删除个人资料？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-007-2",
+      "group_id": "unknown-007",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "不想用这个账户了，怎么连资料一起删除？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-008-1",
+      "group_id": "unknown-008",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "帮我查询北京今天的天气。",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-008-2",
+      "group_id": "unknown-008",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "北京现在是不是在下雨？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-009-1",
+      "group_id": "unknown-009",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "请写一段Python排序代码。",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-009-2",
+      "group_id": "unknown-009",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "帮我写个数组排序的程序。",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-010-1",
+      "group_id": "unknown-010",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "有没有学生折扣？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-010-2",
+      "group_id": "unknown-010",
+      "split": "dev",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "在校学生有没有专门的优惠？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-011-1",
+      "group_id": "unknown-011",
+      "split": "test",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "退款可以打到另一张银行卡吗？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-011-2",
+      "group_id": "unknown-011",
+      "split": "test",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "原来付款的卡注销了，能退到别的卡吗？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-012-1",
+      "group_id": "unknown-012",
+      "split": "test",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "退款失败的具体渠道错误码在哪里查？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-012-2",
+      "group_id": "unknown-012",
+      "split": "test",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "支付渠道为什么退失败了，有错误编号说明吗？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-013-1",
+      "group_id": "unknown-013",
+      "split": "test",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "退款资金由哪个支付机构托管？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-013-2",
+      "group_id": "unknown-013",
+      "split": "test",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "退钱用的具体是哪家支付服务商？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-014-1",
+      "group_id": "unknown-014",
+      "split": "test",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "退款需要提供身份证照片吗？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "unknown-014-2",
+      "group_id": "unknown-014",
+      "split": "test",
+      "kind": "unknown",
+      "topic": "unknown",
+      "query": "退钱的时候一定要上传身份证明吗？",
+      "evidence_groups": [],
+      "expected_behavior": "state_insufficient_evidence",
+      "reference_answer": "现有知识库没有足够依据回答，请说明限制或转人工核实。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "refund-limit-and-state-1",
+      "group_id": "refund-limit-and-state",
+      "split": "dev",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "没发货但付了600元，能自动退吗？",
+      "evidence_groups": [
+        {
+          "id": "refund-limit-and-state-1",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "用户可以申请全额退款"
+            }
+          ]
+        },
+        {
+          "id": "refund-limit-and-state-2",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款金额超过 500 元"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_approval",
+      "reference_answer": "未发货并不足以自动退款；600元超过默认500元上限，需要人工审批。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "refund-limit-and-state-2",
+      "group_id": "refund-limit-and-state",
+      "split": "dev",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "商家还没寄出，可这单六百块，可以不经客服直接退吗？",
+      "evidence_groups": [
+        {
+          "id": "refund-limit-and-state-1",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "用户可以申请全额退款"
+            }
+          ]
+        },
+        {
+          "id": "refund-limit-and-state-2",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款金额超过 500 元"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_approval",
+      "reference_answer": "未发货并不足以自动退款；600元超过默认500元上限，需要人工审批。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "shipped-small-1",
+      "group_id": "shipped-small",
+      "split": "dev",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "商品100元已经发货，能自动退款吗？",
+      "evidence_groups": [
+        {
+          "id": "shipped-small-1",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款申请不能自动通过"
+            }
+          ]
+        },
+        {
+          "id": "shipped-small-2",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款金额小于或等于 500 元"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_approval",
+      "reference_answer": "小额也不能绕过已发货需人工审核的条件。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "shipped-small-2",
+      "group_id": "shipped-small",
+      "split": "dev",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "才一百元但是快递已经寄出，机器人能直接退钱吗？",
+      "evidence_groups": [
+        {
+          "id": "shipped-small-1",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款申请不能自动通过"
+            }
+          ]
+        },
+        {
+          "id": "shipped-small-2",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款金额小于或等于 500 元"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_approval",
+      "reference_answer": "小额也不能绕过已发货需人工审核的条件。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "broken-small-1",
+      "group_id": "broken-small",
+      "split": "dev",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "100元的商品碎了，上传照片就能自动退吗？",
+      "evidence_groups": [
+        {
+          "id": "broken-small-1",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "照片凭证"
+            }
+          ]
+        },
+        {
+          "id": "broken-small-2",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "不能走自动退款通道"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_handoff",
+      "reference_answer": "破损需要照片凭证；金额低也需人工核实，Agent不能识别图片。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "broken-small-2",
+      "group_id": "broken-small",
+      "split": "dev",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "便宜的小东西收到破损了，我发图以后可以自动退钱吗？",
+      "evidence_groups": [
+        {
+          "id": "broken-small-1",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "照片凭证"
+            }
+          ]
+        },
+        {
+          "id": "broken-small-2",
+          "any_of": [
+            {
+              "source": "damaged_goods_policy.md",
+              "contains": "不能走自动退款通道"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_handoff",
+      "reference_answer": "破损需要照片凭证；金额低也需人工核实，Agent不能识别图片。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "current-order-1",
+      "group_id": "current-order",
+      "split": "dev",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "我这张订单现在能退吗？",
+      "evidence_groups": [
+        {
+          "id": "current-order-1",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "订单必须已完成支付"
+            }
+          ]
+        },
+        {
+          "id": "current-order-2",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "订单尚未发货"
+            }
+          ]
+        },
+        {
+          "id": "current-order-3",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款金额不超过 500 元"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "query_business_data",
+      "reference_answer": "需要查询关联订单的归属、支付、发货和金额，再按规则判断，不能臆造当前状态。",
+      "required_tools": [
+        "query_order"
+      ],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "current-order-2",
+      "group_id": "current-order",
+      "split": "dev",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "帮我查查这笔购买现在是不是符合退款条件。",
+      "evidence_groups": [
+        {
+          "id": "current-order-1",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "订单必须已完成支付"
+            }
+          ]
+        },
+        {
+          "id": "current-order-2",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "订单尚未发货"
+            }
+          ]
+        },
+        {
+          "id": "current-order-3",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款金额不超过 500 元"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "query_business_data",
+      "reference_answer": "需要查询关联订单的归属、支付、发货和金额，再按规则判断，不能臆造当前状态。",
+      "required_tools": [
+        "query_order"
+      ],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "lost-approval-1",
+      "group_id": "lost-approval",
+      "split": "test",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "快递丢了，这单200元，我说丢件就能直接退款吗？",
+      "evidence_groups": [
+        {
+          "id": "lost-approval-1",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "丢件责任需客服核实"
+            }
+          ]
+        },
+        {
+          "id": "lost-approval-2",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款申请不能自动通过"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_approval",
+      "reference_answer": "丢件需要客服核实；已发货退款仍需人工审批，不能凭用户说法直接退。",
+      "required_tools": [
+        "query_order",
+        "query_logistics"
+      ],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "lost-approval-2",
+      "group_id": "lost-approval",
+      "split": "test",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "已经寄出的两百元包裹找不到了，能跳过客服马上退吗？",
+      "evidence_groups": [
+        {
+          "id": "lost-approval-1",
+          "any_of": [
+            {
+              "source": "logistics_policy.md",
+              "contains": "丢件责任需客服核实"
+            }
+          ]
+        },
+        {
+          "id": "lost-approval-2",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "退款申请不能自动通过"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_approval",
+      "reference_answer": "丢件需要客服核实；已发货退款仍需人工审批，不能凭用户说法直接退。",
+      "required_tools": [
+        "query_order",
+        "query_logistics"
+      ],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "partial-refund-1",
+      "group_id": "partial-refund",
+      "split": "test",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "订单600元，只想退100元，可以在线直接办吗？",
+      "evidence_groups": [
+        {
+          "id": "partial-refund-1",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "不支持指定商品或指定金额的部分退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_handoff",
+      "reference_answer": "当前在线仅支持全额退款，部分退款需人工核实，不能承诺直接执行。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "partial-refund-2",
+      "group_id": "partial-refund",
+      "split": "test",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "买了六百块的东西，留一部分，系统能只退一百吗？",
+      "evidence_groups": [
+        {
+          "id": "partial-refund-1",
+          "any_of": [
+            {
+              "source": "refund_policy.md",
+              "contains": "不支持指定商品或指定金额的部分退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_handoff",
+      "reference_answer": "当前在线仅支持全额退款，部分退款需人工核实，不能承诺直接执行。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "exchange-scope-1",
+      "group_id": "exchange-scope",
+      "split": "test",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "想换个尺码，可以直接在售后页选换货吗？",
+      "evidence_groups": [
+        {
+          "id": "exchange-scope-1",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "当前系统没有自动退货或换货流程"
+            }
+          ]
+        },
+        {
+          "id": "exchange-scope-2",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "当前在线售后申请只开放 REFUND 全额退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_handoff",
+      "reference_answer": "当前在线只开放全额退款，换货通过普通工单转人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    },
+    {
+      "id": "exchange-scope-2",
+      "group_id": "exchange-scope",
+      "split": "test",
+      "kind": "multi_condition",
+      "topic": "combined",
+      "query": "不退钱只换大小，当前系统可以自动办理吗？",
+      "evidence_groups": [
+        {
+          "id": "exchange-scope-1",
+          "any_of": [
+            {
+              "source": "exchange_policy.md",
+              "contains": "当前系统没有自动退货或换货流程"
+            }
+          ]
+        },
+        {
+          "id": "exchange-scope-2",
+          "any_of": [
+            {
+              "source": "after_sale_policy.md",
+              "contains": "当前在线售后申请只开放 REFUND 全额退款"
+            }
+          ]
+        }
+      ],
+      "expected_behavior": "human_handoff",
+      "reference_answer": "当前在线只开放全额退款，换货通过普通工单转人工受理。",
+      "required_tools": [],
+      "must_not_claim": [
+        "退款已经成功",
+        "已退到银行卡",
+        "我已经看过图片"
+      ]
+    }
+  ]
+}

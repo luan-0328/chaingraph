@@ -134,8 +134,8 @@ function handleReject(): void {
 
     <template #footer>
       <el-button :disabled="loading" @click="handleVisibleChange(false)">取消</el-button>
-      <el-button type="danger" :loading="loading" @click="handleReject">驳回</el-button>
-      <el-button type="primary" :loading="loading" @click="handleApprove">批准并执行</el-button>
+      <el-button type="danger" :loading="loading" :disabled="!ticket?.agent_run?.approval_available" @click="handleReject">驳回</el-button>
+      <el-button type="primary" :loading="loading" :disabled="!ticket?.agent_run?.approval_available" @click="handleApprove">批准并执行</el-button>
     </template>
   </el-dialog>
 </template>

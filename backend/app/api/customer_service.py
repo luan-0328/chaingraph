@@ -90,6 +90,7 @@ def list_tickets(
     """工单列表：客服可以按状态、领取情况、关键词筛选。"""
     statuses = (TicketStatus.WAITING_HUMAN,) if waiting_human else None
     result = ticket_service.list_tickets_for_staff(
+        viewer_id=current_user["id"],
         limit=limit,
         offset=offset,
         status=status_filter,
@@ -111,7 +112,7 @@ def get_ticket(
     ticket_id: int, current_user: dict = Depends(staff_only)
 ) -> TicketDetail:
     """客服视角：不做归属校验（客服本来就要看全部工单），详情里带 Agent 分析与事件。"""
-    ticket = ticket_service.get_ticket_detail(ticket_id)
+    ticket = ticket_service.get_ticket_detail(ticket_id, viewer_id=current_user["id"])
     return TicketDetail(**mappers.ticket_detail(ticket))
 
 
@@ -124,7 +125,7 @@ def assign_ticket(
     """客服领取工单（不传 assignee_id = 自己领取；传 null = 取消领取）。"""
     fields = payload.model_dump(exclude_unset=True) if payload else {}
     assignee_id = fields.get("assignee_id", current_user["id"])
-    ticket_service.assign_ticket(ticket_id=ticket_id, assignee_id=assignee_id)
+    ticket_service.assign_ticket(ticket_id=ticket_id, assignee_id=assignee_id, operator_id=current_user["id"])
     return TicketDetail(**mappers.ticket_detail(ticket_service.get_ticket_detail(ticket_id)))
 
 

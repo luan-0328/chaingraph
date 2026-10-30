@@ -120,6 +120,7 @@ def _build_initial_state(
     content: str,
 ) -> AgentState:
     """组装初始 State（工单内容 + 最近对话 + 关联业务对象 id）。"""
+    from app.agent.version import execution_spec
     recent_messages = _recent_messages(ticket["id"])
 
     # 没有 after_sale_id 时，尝试按订单找一张进行中的售后单，让 Agent 一上来就知道上下文
@@ -132,6 +133,7 @@ def _build_initial_state(
         after_sale_id = sale["id"] if sale else None
 
     return {
+        "flow_version": execution_spec()["version"],
         "user_id": ticket["user_id"],
         "ticket_id": ticket["id"],
         "order_id": ticket.get("order_id"),

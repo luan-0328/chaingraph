@@ -59,6 +59,9 @@ class OpenAICompatibleEmbeddings:
             api_key=api_key,
             base_url=base_url or None,
             model=model,
+            # 当前兼容服务单批最多 20 条；限制为 16，发布整篇文档时也能分批调用。
+            chunk_size=16,
+            request_timeout=30,
             check_embedding_ctx_length=False,   # 兼容非 OpenAI 的第三方实现
         )
         # 维度先按配置，没配就让第一次调用时探测

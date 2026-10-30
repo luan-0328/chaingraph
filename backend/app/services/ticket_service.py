@@ -20,6 +20,7 @@ AgentService 只描述"我这次执行是什么结局"，由 TicketService 决�
 from app.core.database import session_scope
 from app.core.exceptions import (
     AgentExecutionError,
+    DuplicateOperationError,
     InvalidStateError,
     OrderNotFoundError,
     PermissionDeniedError,
@@ -30,7 +31,7 @@ from app.core.logging import get_logger
 from app.core.time import utcnow
 from app.models.agent_event import AgentEventType
 from app.models.agent_run import AgentRunStatus
-from app.models.ticket import AgentStatus, TicketStatus
+from app.models.ticket import AgentStatus, TicketStatus, HandlingMode
 from app.models.ticket_message import SenderType
 from app.repositories import (
     agent_run_repository,
@@ -107,6 +108,10 @@ def create_ticket(
             content=content,
         )
 
+    from app.services.handoff_service import is_handoff_command, request_human
+    if is_handoff_command(content):
+        return request_human(ticket_id=ticket["id"], user_id=user_id, reason="用户明确要求人工客服")
+
     # 退款类工单但没有售后单 → 补建（在另一个事务里，避免长事务）
     if after_sale_id is None and order_id is not None and type == "REFUND":
         existing = _find_active_after_sale(order_id)
@@ -144,6 +149,8 @@ def list_my_tickets(*, user_id: int, limit: int = 20, offset: int = 0, status: s
         items, total = ticket_repository.list_tickets(
             db, user_id=user_id, limit=limit, offset=offset, status=status
         )
+        from app.services.message_read_service import annotate
+        items = annotate(db, items, user_id)
     return {"items": items, "total": total, "limit": limit, "offset": offset}
 
 
@@ -156,6 +163,7 @@ def list_tickets_for_staff(
     assignee_id: int | None = None,
     unassigned: bool = False,
     keyword: str | None = None,
+    viewer_id: int | None = None,
 ) -> dict:
     """客服工作台列表：支持按状态/归属/关键词过滤（v2.md §23.1）。"""
     with session_scope() as db:
@@ -169,10 +177,12 @@ def list_tickets_for_staff(
             unassigned=unassigned,
             keyword=keyword,
         )
+        from app.services.message_read_service import annotate
+        items = annotate(db, items, viewer_id)
     return {"items": items, "total": total, "limit": limit, "offset": offset}
 
 
-def get_ticket_detail(ticket_id: int, *, user_id: int | None = None) -> dict:
+def get_ticket_detail(ticket_id: int, *, user_id: int | None = None, viewer_id: int | None = None) -> dict:
     """工单详情：工单 + 消息 + 最近一次 Agent 执行 + 事件 + 历史执行记录。
 
     user_id 不为 None 时校验归属（用户只能看自己的工单；客服传 None）。
@@ -185,6 +195,10 @@ def get_ticket_detail(ticket_id: int, *, user_id: int | None = None) -> dict:
             raise PermissionDeniedError("无权查看他人的工单")
 
         messages = ticket_repository.list_messages(db, ticket_id)
+        from app.services.attachment_service import attach_metadata
+        from app.services.message_read_service import annotate
+        messages = attach_metadata(db, messages)
+        ticket = annotate(db, [ticket], viewer_id if viewer_id is not None else user_id)[0]
         runs = agent_run_repository.list_runs(db, ticket_id)
         latest_run = runs[0] if runs else None
         events = (
@@ -229,11 +243,16 @@ def add_message(
     并且用户发言后如果工单处于 RESOLVED/CLOSED，自动重新打开（v2.md §67：用户不满意可继续沟通）。
     """
     with session_scope() as db:
-        ticket = ticket_repository.get_by_id(db, ticket_id)
+        ticket = ticket_repository.get_for_update(db, ticket_id)
         if ticket is None:
             raise TicketNotFoundError(f"工单 {ticket_id} 不存在")
         if user_id is not None and ticket["user_id"] != user_id:
             raise PermissionDeniedError("无权在他人的工单里发言")
+        if sender_type == SenderType.CUSTOMER_SERVICE and ticket["handling_mode"] != HandlingMode.AGENT:
+            if ticket["handling_mode"] == HandlingMode.HUMAN_PENDING:
+                raise InvalidStateError("Agent 尚未确认交接，请等待后再人工回复")
+            if ticket["assignee_id"] != sender_id:
+                raise PermissionDeniedError("请先领取工单，再回复用户")
 
         message = ticket_repository.add_message(
             db,
@@ -252,20 +271,43 @@ def add_message(
             ticket_repository.update_status(db, ticket_id, TicketStatus.PROCESSING)
             logger.info("用户回复，工单重新打开：ticket_id=%s", ticket_id)
 
+        from app.services.handoff_service import is_handoff_command, request_locked
+        if sender_type == SenderType.USER and is_handoff_command(content):
+            request_locked(db, ticket_id, "用户明确要求人工客服")
+
     return message
 
 
 # ======================================================================
 # 状态流转
 # ======================================================================
-def assign_ticket(*, ticket_id: int, assignee_id: int | None) -> dict:
+def assign_ticket(*, ticket_id: int, assignee_id: int | None, operator_id: int | None = None) -> dict:
     """客服领取 / 取消领取工单（v2.md §23.1）。"""
     with session_scope() as db:
-        ticket = ticket_repository.get_by_id(db, ticket_id)
+        ticket = ticket_repository.get_for_update(db, ticket_id)
         if ticket is None:
             raise TicketNotFoundError(f"工单 {ticket_id} 不存在")
 
-        updated = ticket_repository.update_fields(db, ticket_id, assignee_id=assignee_id)
+        if ticket["handling_mode"] == HandlingMode.HUMAN_PENDING:
+            raise InvalidStateError("Agent 尚未确认交接，请稍后领取")
+        if operator_id is not None:
+            from app.repositories import user_repository
+            operator = user_repository.get_by_id(db, operator_id)
+            if ticket["assignee_id"] not in (None, operator_id) and (not operator or operator["role"] != "ADMIN"):
+                raise DuplicateOperationError("工单已被其他客服领取，请刷新", code="TICKET_ALREADY_ASSIGNED")
+            if assignee_id not in (None, operator_id) and (not operator or operator["role"] != "ADMIN"):
+                raise PermissionDeniedError("只有管理员可以转派给其他客服")
+        if assignee_id is not None:
+            from app.services.refund_service import _validate_operator
+            _validate_operator(db, assignee_id)
+        if ticket["assignee_id"] != assignee_id and not ticket_repository.compare_assignment(db, ticket_id, ticket["assignee_id"], assignee_id):
+            raise DuplicateOperationError("领取状态已变化，请刷新", code="TICKET_ALREADY_ASSIGNED")
+        model = ticket_repository.get_model(db, ticket_id)
+        db.refresh(model)
+        if ticket["handling_mode"] == HandlingMode.HUMAN and ticket["status"] not in (TicketStatus.CLOSED, TicketStatus.RESOLVED):
+            model.status = TicketStatus.PROCESSING if assignee_id else TicketStatus.WAITING_HUMAN
+        db.flush()
+        updated = model.to_dict()
 
     logger.info("工单领取变更：ticket_id=%s assignee=%s", ticket_id, assignee_id)
     return updated
@@ -525,6 +567,11 @@ def takeover_ticket(*, ticket_id: int, operator_id: int, comment: str | None = N
         if ticket.assignee_id == operator_id and not run:
             return get_ticket_detail(ticket_id)
         ticket.assignee_id = operator_id
+        if ticket.handling_mode == HandlingMode.AGENT:
+            ticket.handoff_round += 1
+            ticket.handoff_reason = comment or "客服主动接管"
+            ticket.handoff_requested_at = utcnow()
+        ticket.handling_mode = HandlingMode.HUMAN
         if run and run.status == AgentRunStatus.WAITING_HUMAN:
             run.status = AgentRunStatus.REJECTED
             run.finished_at = utcnow()

@@ -10,14 +10,14 @@
 
 每个事件用独立短事务写库：Agent 执行时间较长，不应该把整个 run 包在一个长事务里。
 
-心跳（并发控制的一部分）
-------------------------
-Agent 每走一个节点都会 emit_event，所以这里顺便把 agent_runs.alive_at 刷成当前时间。
-它的唯一用途是让"工单被 Agent 占着"这件事**有活性证明**：
-万一进程被杀，心跳会停住，后续请求就能据此判定"这是僵尸执行"并回收执行权
-（否则工单会永久卡在 agent_status=RUNNING，用户再也点不动"开始处理"）。
-心跳写失败绝不影响 Agent 主流程 —— 它只是运维信号，不是业务数据。
+活跃时间与租约
+--------------
+事件会刷新 alive_at，供观察最近活动。执行权由独立心跳续租和 lease_until 判断，
+不能仅凭最后一条事件推断租约仍有效。异步节点通过 aemit_event 在线程中写库，
+同步工具使用 emit_event；两者均等待事务结束。带幂等键的审计写入失败会向上抛出。
 """
+
+import asyncio
 
 from app.core.database import session_scope
 from app.core.logging import get_logger
@@ -69,6 +69,11 @@ def emit_event(
     return event
 
 
+async def aemit_event(**kwargs) -> dict:
+    """在线程中完成事件事务；异步节点等待落库，但不阻塞其他工单的调度。"""
+    return await asyncio.to_thread(emit_event, **kwargs)
+
+
 def emit_done(*, ticket_id: int, agent_run_id: int | None, status: str, message: str, payload: dict | None = None) -> None:
     """处理结束（成功/失败/等待人工）时告诉前端"可以刷新了"。"""
     progress_bus.publish(
@@ -111,4 +116,4 @@ def emit_error(
     )
 
 
-__all__ = ["AgentEventType", "emit_done", "emit_error", "emit_event"]
+__all__ = ["aemit_event", "AgentEventType", "emit_done", "emit_error", "emit_event"]

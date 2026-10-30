@@ -1,8 +1,11 @@
 <script setup lang="ts">
 /**
  * 我的工单：列表 + 状态筛选 + 分页 + 提交问题入口。
+ *
+ * 状态筛选做成胶囊而不是下拉：工单状态数量少，平铺出来能一眼看到
+ * "我还有没有在处理中的单"，少一次点击。
  */
-import { onMounted, ref } from 'vue'
+import { onUnmounted, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import StatusTag from '@/components/common/StatusTag.vue'
@@ -20,6 +23,9 @@ const tickets = ref<TicketSummary[]>([])
 const total = ref(0)
 const page = ref(1)
 const statusFilter = ref<string>('')
+
+/** "全部" + 字典里的状态；顺序沿用字典，避免前端另排一套 */
+const statusFilters = [{ value: '', label: '全部' }, ...TICKET_STATUS_OPTIONS]
 
 async function load(): Promise<void> {
   loading.value = true
@@ -39,7 +45,9 @@ async function load(): Promise<void> {
   }
 }
 
-function handleFilterChange(): void {
+function selectStatus(value: string): void {
+  if (statusFilter.value === value) return
+  statusFilter.value = value
   page.value = 1
   void load()
 }
@@ -62,40 +70,63 @@ function displayTitle(row: TicketSummary): string {
   return row.title || truncate(row.content, 24)
 }
 
-onMounted(load)
+let refreshTimer: ReturnType<typeof setInterval> | null = null
+onMounted(() => {
+  void load()
+  refreshTimer = setInterval(() => {
+    if (!loading.value && document.visibilityState === 'visible') void load()
+  }, 10000)
+})
+onUnmounted(() => {
+  if (refreshTimer) clearInterval(refreshTimer)
+})
 </script>
 
 <template>
   <div>
     <div class="page-header">
-      <h2 class="page-header__title">我的工单</h2>
-      <el-button type="primary" @click="goCreate">提交问题</el-button>
+      <div>
+        <h2 class="page-header__title">我的工单</h2>
+        <p class="page-header__sub">
+          提交问题后，Agent 会查询订单与售后数据，并把处理进度实时回传。
+        </p>
+      </div>
+      <el-button type="primary" @click="goCreate">
+        <el-icon><Plus /></el-icon>
+        <span>提交问题</span>
+      </el-button>
     </div>
 
     <div class="page-card">
-      <div class="toolbar">
-        <el-select
-          v-model="statusFilter"
-          placeholder="全部状态"
-          clearable
-          style="width: 180px"
-          @change="handleFilterChange"
+      <div class="filter-bar">
+        <button
+          v-for="option in statusFilters"
+          :key="option.value"
+          type="button"
+          class="filter-bar__item"
+          :class="{ 'is-active': statusFilter === option.value }"
+          @click="selectStatus(option.value)"
         >
-          <el-option
-            v-for="option in TICKET_STATUS_OPTIONS"
-            :key="option.value"
-            :label="option.label"
-            :value="option.value"
-          />
-        </el-select>
-        <el-button @click="load">刷新</el-button>
+          {{ option.label }}
+        </button>
+        <el-button class="filter-bar__refresh" text @click="load">
+          <el-icon><Refresh /></el-icon>
+          <span>刷新</span>
+        </el-button>
       </div>
 
       <el-table v-loading="loading" :data="tickets" row-key="ticket_id">
-        <el-table-column label="工单号" width="170">
+        <el-table-column label="未读" width="75">
+          <template #default="{ row }">
+            <el-tag v-if="row.unread_count" type="danger" size="small">{{
+              row.unread_count
+            }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="工单号" width="180">
           <template #default="{ row }">
             <el-link type="primary" :underline="false" @click="goDetail(row)">
-              {{ row.ticket_no }}
+              <span class="mono">{{ row.ticket_no }}</span>
             </el-link>
           </template>
         </el-table-column>

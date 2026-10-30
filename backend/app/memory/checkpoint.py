@@ -11,8 +11,8 @@ v2.md §32 说得直白：
     为什么不用 Postgres？V1 明确不引入额外基础设施（v2.md §4.4）。
 
 生命周期：
-    FastAPI 启动时 init_checkpointer()（异步上下文进入并保持打开），
-    关闭时 close_checkpointer()。全局单例，跨请求复用。
+    仅 worker 启动时打开、停止时关闭。同一 worker 内多个任务共用一个 Saver，
+    Saver 自身的 asyncio.Lock 串行化数据库操作，不串行化完整工单执行。
 """
 
 from contextlib import AsyncExitStack
@@ -35,10 +35,19 @@ async def init_checkpointer() -> AsyncSqliteSaver:
     if _saver is not None:
         return _saver
 
-    _stack = AsyncExitStack()
-    _saver = await _stack.enter_async_context(
-        AsyncSqliteSaver.from_conn_string(str(settings.checkpoint_path))
-    )
+    stack = AsyncExitStack()
+    try:
+        saver = await stack.enter_async_context(
+            AsyncSqliteSaver.from_conn_string(str(settings.checkpoint_path))
+        )
+        await saver.setup()
+        # WAL 由 Saver.setup 开启；忙等待与 FULL 同步保护本地并发及提交持久性。
+        await saver.conn.execute("PRAGMA busy_timeout=5000")
+        await saver.conn.execute("PRAGMA synchronous=FULL")
+    except BaseException:
+        await stack.aclose()
+        raise
+    _stack, _saver = stack, saver
     logger.info("Checkpoint 存储已就绪：%s", settings.checkpoint_path)
     return _saver
 

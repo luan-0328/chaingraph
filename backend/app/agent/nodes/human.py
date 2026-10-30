@@ -10,9 +10,11 @@ interrupt() 会做三件事：
 表现完全不同 —— 第一次挂起，第二次拿到审批结果继续往下走。
 """
 
+import asyncio
+
 from langgraph.types import interrupt
 
-from app.agent.events import emit_event
+from app.agent.events import aemit_event
 from app.agent.state import AgentState
 from app.core.logging import get_logger
 from app.models.agent_event import AgentEventType
@@ -42,11 +44,11 @@ async def human_review(state: AgentState) -> dict:
     }
 
     from app.services.agent_task_service import save_review
-    payload = save_review(state, payload, review_round)
+    payload = await asyncio.to_thread(save_review, state, payload, review_round)
     review_round = payload["review_round"]
     key = f"run:{agent_run_id}:review:{review_round}" if agent_run_id is not None else None
 
-    emit_event(
+    await aemit_event(
         agent_run_id=agent_run_id,
         ticket_id=ticket_id,
         event_type=AgentEventType.WAITING_HUMAN,
@@ -63,7 +65,7 @@ async def human_review(state: AgentState) -> dict:
     comment = (decision or {}).get("comment")
     operator_id = (decision or {}).get("operator_id")
 
-    emit_event(
+    await aemit_event(
         agent_run_id=agent_run_id,
         ticket_id=ticket_id,
         event_type=(

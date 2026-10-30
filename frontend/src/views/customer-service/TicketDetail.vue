@@ -23,6 +23,8 @@ import AgentProcessTimeline from '@/components/agent/AgentProcessTimeline.vue'
 import AgentResultCard from '@/components/agent/AgentResultCard.vue'
 import ApprovalDialog from '@/components/agent/ApprovalDialog.vue'
 import StatusTag from '@/components/common/StatusTag.vue'
+import { useTicketReadReceipt } from '@/composables/useTicketReadReceipt'
+import TicketImageUpload from '@/components/ticket/TicketImageUpload.vue'
 import TicketMessageInput from '@/components/ticket/TicketMessageInput.vue'
 import TicketMessageList from '@/components/ticket/TicketMessageList.vue'
 import {
@@ -34,6 +36,8 @@ import {
   rejectTicket,
   replyTicket,
   resolveTicket,
+  takeoverTicket,
+  returnToAgent,
 } from '@/api/customerService'
 import { processTicket, subscribeTicketStream, trackEventId } from '@/api/tickets'
 import { useAuthStore } from '@/stores/auth'
@@ -55,6 +59,7 @@ const ticketId = computed(() => Number(route.params.id))
 
 const loading = ref(false)
 const detail = ref<TicketDetail | null>(null)
+useTicketReadReceipt(detail)
 /** 关联订单：工单只存 order_id，金额/履约状态要单独查一次（客服看单时常要核这几个数） */
 const order = ref<OrderDetail | null>(null)
 
@@ -62,6 +67,32 @@ const acting = ref(false) // 领取/审批/解决/关闭这类"改状态"的操�
 const sending = ref(false) // 回复消息
 const processing = ref(false) // 重新让 Agent 处理（同步等 LLM，可能十几秒）
 const approvalVisible = ref(false)
+let reviewRefresh: ReturnType<typeof setInterval> | null = null
+let reviewRefreshing = false
+
+function stopReviewRefresh(): void {
+  if (reviewRefresh !== null) clearInterval(reviewRefresh)
+  reviewRefresh = null
+}
+
+watch(
+  () => `${detail.value?.status}:${detail.value?.handling_mode}`,
+  () => {
+    stopReviewRefresh()
+    if (!isWaitingHuman.value) approvalVisible.value = false
+    if (detail.value?.status === 'WAITING_HUMAN' || detail.value?.handling_mode !== 'AGENT') {
+      reviewRefresh = setInterval(async () => {
+        if (reviewRefreshing) return
+        reviewRefreshing = true
+        try {
+          await load(true)
+        } finally {
+          reviewRefreshing = false
+        }
+      }, 5000)
+    }
+  },
+)
 
 // ---------------- SSE：Agent 实时进度 ----------------
 const streaming = ref(false)
@@ -166,7 +197,9 @@ async function load(silent = false): Promise<void> {
 
 // ---------------- 顶部操作 ----------------
 const status = computed(() => detail.value?.status ?? null)
-const isWaitingHuman = computed(() => status.value === 'WAITING_HUMAN')
+const isWaitingHuman = computed(
+  () => status.value === 'WAITING_HUMAN' && detail.value?.handling_mode === 'AGENT',
+)
 const isClosed = computed(() => status.value === 'CLOSED')
 /** 已领取的工单不再显示"领取"（避免抢同事的单）；真要转派由后端传 assignee_id */
 const canAssign = computed(() => Boolean(detail.value) && !detail.value?.assignee_id)
@@ -204,12 +237,45 @@ async function handleAssign(): Promise<void> {
   }
 }
 
+async function handleTakeover(): Promise<void> {
+  try {
+    await ElMessageBox.confirm('接管后 Agent 将停止恢复当前方案，后续由你人工跟进。', '人工接管', {
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
+  acting.value = true
+  try {
+    detail.value = await takeoverTicket(ticketId.value)
+    stopStream()
+    ElMessage.success('已接管，当前 Agent 方案已停止')
+  } finally {
+    acting.value = false
+  }
+}
+
+async function handleReturnToAgent(): Promise<void> {
+  acting.value = true
+  try {
+    detail.value = await returnToAgent(ticketId.value)
+    ElMessage.success('已明确交回 Agent，可发起新的自动处理')
+  } finally {
+    acting.value = false
+  }
+}
+
 async function handleApprove(comment: string): Promise<void> {
   acting.value = true
   try {
     const run = detail.value?.agent_run
     if (!run) return
-    const updated = await approveTicket(ticketId.value, run.agent_run_id, run.review_round, comment || undefined)
+    const updated = await approveTicket(
+      ticketId.value,
+      run.agent_run_id,
+      run.review_round,
+      comment || undefined,
+    )
     detail.value = updated
     approvalVisible.value = false
     ElMessage.success('批准已提交，等待后台执行')
@@ -331,7 +397,7 @@ function durationOf(startedAt: string | null, finishedAt: string | null): string
 onMounted(async () => {
   await load()
   // 挂载时正在处理中的工单：自动订阅进度，客服不用手动刷新
-  if (status.value === 'PROCESSING') startStream()
+  if (detail.value?.agent_status === 'RUNNING') startStream()
 })
 
 // 同一路由不同 id（从列表连续点进去）时组件不会重建，要自己重新加载
@@ -341,7 +407,10 @@ watch(ticketId, () => {
   void load()
 })
 
-onUnmounted(stopStream)
+onUnmounted(() => {
+  stopStream()
+  stopReviewRefresh()
+})
 </script>
 
 <template>
@@ -360,19 +429,38 @@ onUnmounted(stopStream)
         <el-button
           v-if="isWaitingHuman"
           type="warning"
-          :disabled="acting"
+          :disabled="acting || !detail.agent_run?.approval_available"
           @click="approvalVisible = true"
         >
           人工审批
         </el-button>
-        <el-button v-if="canAssign" :loading="acting" @click="handleAssign">领取工单</el-button>
+        <el-button
+          v-if="canAssign"
+          :loading="acting"
+          :disabled="detail.handling_mode === 'HUMAN_PENDING'"
+          @click="handleAssign"
+          >领取工单</el-button
+        >
+        <el-button
+          v-if="
+            detail.handling_mode === 'HUMAN' &&
+            detail.assignee_id === auth.user?.user_id &&
+            !isClosed
+          "
+          :disabled="acting"
+          @click="handleReturnToAgent"
+          >交回 Agent</el-button
+        >
+        <el-button v-if="isWaitingHuman" :disabled="acting" @click="handleTakeover"
+          >人工接管</el-button
+        >
         <el-button v-if="!isClosed" :disabled="acting" @click="handleResolve">标记已解决</el-button>
         <el-button v-if="!isClosed" :disabled="acting" @click="handleClose">关闭工单</el-button>
         <el-button
           v-if="!isClosed"
           type="primary"
           :loading="processing"
-          :disabled="processing"
+          :disabled="processing || detail.handling_mode !== 'AGENT'"
           @click="handleProcess"
         >
           重新让 Agent 处理
@@ -381,9 +469,32 @@ onUnmounted(stopStream)
     </div>
 
     <template v-if="detail">
-      <el-row :gutter="16">
+      <el-alert
+        v-if="detail.handling_mode !== 'AGENT'"
+        type="info"
+        :closable="false"
+        show-icon
+        :title="
+          detail.handling_mode === 'HUMAN_PENDING'
+            ? 'Agent 正在安全交接，请等待确认后人工操作'
+            : '人工处理模式：领取后可在原工单中与用户交流并处理业务'
+        "
+        :description="detail.handoff_reason || '由负责客服明确交回后才允许重新启动 Agent。'"
+      />
+      <el-alert
+        v-if="isWaitingHuman"
+        :type="detail.agent_run?.approval_blocked_reason ? 'error' : 'warning'"
+        :closable="false"
+        show-icon
+        :title="
+          detail.agent_run?.approval_blocked_reason ||
+          `待人工审批，截止时间：${formatDateTime(detail.agent_run?.review_deadline_at)}`
+        "
+        description="请核对方案后处理。超时将转人工跟进，不会自动批准或退款。"
+      />
+      <div class="ticket-layout">
         <!-- 左：工单信息 + 关联单据 -->
-        <el-col :xs="24" :sm="24" :md="7" :lg="6">
+        <div class="ticket-col ticket-col--meta">
           <div class="page-card">
             <h3 class="page-card__title">工单信息</h3>
             <el-descriptions :column="1" size="small" border>
@@ -451,19 +562,28 @@ onUnmounted(stopStream)
               </el-button>
             </div>
           </div>
-        </el-col>
+        </div>
 
         <!-- 中：与用户的对话 -->
-        <el-col :xs="24" :sm="24" :md="10" :lg="10">
+        <div class="ticket-col ticket-col--chat">
           <div class="page-card">
             <h3 class="page-card__title">沟通记录</h3>
             <TicketMessageList :messages="detail.messages" perspective="staff" />
             <TicketMessageInput :loading="sending" @send="handleSend" />
+            <TicketImageUpload
+              :ticket-id="ticketId"
+              :disabled="
+                detail.status === 'CLOSED' ||
+                detail.handling_mode === 'HUMAN_PENDING' ||
+                detail.assignee_id !== auth.user?.user_id
+              "
+              @uploaded="load(true)"
+            />
           </div>
-        </el-col>
+        </div>
 
         <!-- 右：Agent 过程 / 方案 / 历史执行 -->
-        <el-col :xs="24" :sm="24" :md="7" :lg="8">
+        <div class="ticket-col ticket-col--agent">
           <div class="page-card">
             <h3 class="page-card__title">
               Agent 处理过程
@@ -478,10 +598,8 @@ onUnmounted(stopStream)
             />
           </div>
 
-          <div class="page-card">
-            <h3 class="page-card__title">Agent 处理方案</h3>
-            <AgentResultCard :run="detail.agent_run" />
-          </div>
+          <!-- AgentResultCard 自带 page-card 外壳，这里不要再包一层，否则会出现双卡片 -->
+          <AgentResultCard :run="detail.agent_run" />
 
           <div class="page-card">
             <h3 class="page-card__title">历史 Agent 执行</h3>
@@ -501,7 +619,12 @@ onUnmounted(stopStream)
               <el-table-column label="重试" width="90">
                 <template #default="{ row }">
                   <!-- 重试次数与"是否断点续跑"是排查 Agent 稳定性最直接的两个数 -->
-                  <el-tag v-if="row.retry_count > 0" type="warning" size="small" disable-transitions>
+                  <el-tag
+                    v-if="row.retry_count > 0"
+                    type="warning"
+                    size="small"
+                    disable-transitions
+                  >
                     {{ row.retry_count }} 次重试
                   </el-tag>
                   <span v-else class="text-secondary">—</span>
@@ -509,7 +632,9 @@ onUnmounted(stopStream)
               </el-table-column>
               <el-table-column label="断点续跑" width="90">
                 <template #default="{ row }">
-                  <el-tag v-if="row.resumed" type="success" size="small" disable-transitions>是</el-tag>
+                  <el-tag v-if="row.resumed" type="success" size="small" disable-transitions
+                    >是</el-tag
+                  >
                   <span v-else class="text-secondary">—</span>
                 </template>
               </el-table-column>
@@ -550,8 +675,8 @@ onUnmounted(stopStream)
             </el-table>
             <el-empty v-else description="该工单还没有 Agent 执行记录" :image-size="60" />
           </div>
-        </el-col>
-      </el-row>
+        </div>
+      </div>
     </template>
 
     <div v-else-if="!loading" class="page-card">
@@ -575,14 +700,26 @@ onUnmounted(stopStream)
   gap: 12px;
 }
 
+.ticket__head .page-header__title {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  letter-spacing: -0.3px;
+}
+
 .ticket__actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
+.ticket__actions .el-button + .el-button {
+  margin-left: 0;
+}
+
 .ticket__content {
-  margin-top: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-color);
 }
 
 .ticket__label {
@@ -596,9 +733,59 @@ onUnmounted(stopStream)
   gap: 8px;
 }
 
+.ticket-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.55fr) minmax(300px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ticket-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.ticket-col .page-card + .page-card {
+  margin-top: 0;
+}
+
+.ticket-col--chat .chat {
+  max-height: 520px;
+}
+
 /* 时间线标题后的"实时进度中"标签 */
 .page-card__title .el-tag {
   margin-left: 8px;
   font-weight: 400;
+}
+
+@media (max-width: 1360px) {
+  .ticket-layout {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+
+  .ticket-col--agent {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 900px) {
+  .ticket-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket-col--agent {
+    grid-column: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .ticket__head {
+    flex-wrap: wrap;
+  }
 }
 </style>

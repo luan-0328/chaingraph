@@ -52,6 +52,27 @@ logger = get_logger(__name__)
 
 _graph = None
 
+
+def check_handoff_boundary() -> None:
+    """节点边界校验交接请求；只有 worker 携带执行凭证时才访问业务库。"""
+    from app.core.execution import execution_claim
+    from app.core.database import session_scope
+    if execution_claim.get() is not None:
+        with session_scope():
+            pass
+
+
+def guarded_node(function):
+    """不取消运行中的工具线程；等待节点完成后在进入下一步之前确认交接。"""
+    async def invoke(state):
+        """在节点前后检查交接边界，等待当前调用退出后再交回人工。"""
+        import asyncio
+        await asyncio.to_thread(check_handoff_boundary)
+        result = await function(state)
+        await asyncio.to_thread(check_handoff_boundary)
+        return result
+    return invoke
+
 # 节点名 → 实现（图与测试注入都用这份映射，避免两处各写一遍字符串）
 NODE_FUNCTIONS = {
     "analyze_ticket": lambda: nodes.analyze.analyze_ticket,
@@ -69,7 +90,7 @@ def build_graph(checkpointer=None):
 
     # ---- 节点 ----
     for name, resolve in NODE_FUNCTIONS.items():
-        graph.add_node(name, resolve())
+        graph.add_node(name, guarded_node(resolve()))
 
     # ---- 边 ----
     graph.add_edge(START, "analyze_ticket")

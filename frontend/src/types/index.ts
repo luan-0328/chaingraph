@@ -264,6 +264,7 @@ export type AgentStatus = 'IDLE' | 'RUNNING' | 'WAITING_HUMAN'
 export type SenderType = 'USER' | 'AGENT' | 'CUSTOMER_SERVICE' | 'SYSTEM'
 
 export interface TicketMessageInfo {
+  attachments?: TicketAttachment[]
   message_id: number
   ticket_id: number
   sender_type: SenderType
@@ -301,6 +302,13 @@ export interface AgentResult {
 }
 
 export interface AgentRunInfo {
+  flow_version?: string | null
+  execution_spec?: Record<string, unknown> | null
+  review_requested_at?: string | null
+  review_deadline_at?: string | null
+  review_reminded_at?: string | null
+  approval_available?: boolean
+  approval_blocked_reason?: string | null
   review_round: number
   review_payload?: { reason?: string; order_snapshot?: Record<string, unknown> } | null
   execution_epoch?: number
@@ -326,7 +334,19 @@ export interface AgentRunInfo {
   result: AgentResult | null
 }
 
+export interface TicketAttachment {
+  attachment_id: number
+  ticket_id: number
+  filename: string
+  content_type: string
+  size: number
+}
+
 export interface TicketSummary {
+  unread_count?: number
+  handling_mode: 'AGENT' | 'HUMAN_PENDING' | 'HUMAN'
+  handoff_reason?: string | null
+  handoff_requested_at?: string | null
   ticket_id: number
   ticket_no: string
   user_id: number

@@ -60,6 +60,11 @@ class AgentRun(Base, TimestampMixin):
     review_round: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     review_payload: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     approval_decision: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    flow_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    execution_spec: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    review_requested_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    review_deadline_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    review_reminded_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     status: Mapped[str] = mapped_column(
         String(16), nullable=False, default=AgentRunStatus.PENDING
@@ -69,7 +74,7 @@ class AgentRun(Base, TimestampMixin):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    # 心跳：Agent 每个业务事件都会刷新它，用来识别僵尸执行（进程被杀留下的 RUNNING）
+    # 活跃时间：事件和独立续租都会刷新；任务是否可回收以 lease_until 为准。
     alive_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     # 当前正在执行的节点名（由 LangGraph 回调写入；不跑在节点里时为空）
     current_node: Mapped[str | None] = mapped_column(String(64), nullable=True)
@@ -96,6 +101,7 @@ class AgentRun(Base, TimestampMixin):
     __table_args__ = (
         Index("idx_agent_runs_queue", "status", "next_attempt_at", "lease_until"),
         Index("idx_agent_runs_ticket_id", "ticket_id"),
+        Index("idx_agent_runs_review_deadline", "status", "review_deadline_at"),
         # 唯一：thread_id 是一次执行的 LangGraph 上下文，天然只能指向一条 run。
         # 同工单任务互斥由提交事务保证；thread_id 唯一只保护执行上下文标识。
         UniqueConstraint("thread_id", name="uq_agent_runs_thread_id"),
@@ -104,6 +110,11 @@ class AgentRun(Base, TimestampMixin):
 
     def to_dict(self) -> dict:
         return {
+            "flow_version": self.flow_version,
+            "execution_spec": self.execution_spec,
+            "review_requested_at": self.review_requested_at,
+            "review_deadline_at": self.review_deadline_at,
+            "review_reminded_at": self.review_reminded_at,
             "worker_id": self.worker_id,
             "lease_until": self.lease_until,
             "execution_epoch": self.execution_epoch,

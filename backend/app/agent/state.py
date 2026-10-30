@@ -42,6 +42,7 @@ class AgentState(TypedDict, total=False):
     after_sale_id: int | None
     thread_id: str
     agent_run_id: int
+    flow_version: str
 
     # ---- 输入 ----
     content: str                              # 工单内容

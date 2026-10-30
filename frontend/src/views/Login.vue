@@ -9,6 +9,7 @@ import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 
+import AuthShell from '@/components/auth/AuthShell.vue'
 import { useAuthStore } from '@/stores/auth'
 import type { LoginRequest } from '@/types'
 
@@ -28,9 +29,9 @@ const rules: FormRules<LoginRequest> = {
 
 /** 演示账号（与 backend/app/repositories/seed.py 一致） */
 const demoAccounts = [
-  { label: '普通用户', username: 'alice', password: '123456' },
-  { label: '客服', username: 'service01', password: '123456' },
-  { label: '管理员', username: 'admin', password: 'admin123' },
+  { label: '普通用户', username: 'alice', password: '123456', icon: 'User' },
+  { label: '客服', username: 'service01', password: '123456', icon: 'Service' },
+  { label: '管理员', username: 'admin', password: 'admin123', icon: 'Setting' },
 ]
 
 function fill(account: { username: string; password: string }): void {
@@ -66,129 +67,170 @@ async function handleSubmit(): Promise<void> {
 </script>
 
 <template>
-  <div class="login-page">
-    <div class="login-card">
-      <h1 class="login-card__title">智能电商客服与售后工单平台</h1>
-      <p class="login-card__subtitle">请使用您的账号登录</p>
+  <AuthShell>
+    <header class="auth-head">
+      <h1 class="auth-head__title">欢迎回来</h1>
+      <p class="auth-head__sub">登录后继续处理你的订单、售后与工单。</p>
+    </header>
 
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-position="top"
-        size="large"
-        @submit.prevent="handleSubmit"
-      >
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名" clearable>
-            <template #prefix>
-              <el-icon><User /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-position="top"
+      size="large"
+      @submit.prevent="handleSubmit"
+    >
+      <el-form-item label="用户名" prop="username">
+        <el-input
+          v-model="form.username"
+          placeholder="请输入用户名"
+          clearable
+          autocomplete="username"
+        >
+          <template #prefix>
+            <el-icon><User /></el-icon>
+          </template>
+        </el-input>
+      </el-form-item>
 
-        <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="form.password"
-            type="password"
-            placeholder="请输入密码"
-            show-password
-            @keyup.enter="handleSubmit"
-          >
-            <template #prefix>
-              <el-icon><Lock /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input
+          v-model="form.password"
+          type="password"
+          placeholder="请输入密码"
+          show-password
+          autocomplete="current-password"
+          @keyup.enter="handleSubmit"
+        >
+          <template #prefix>
+            <el-icon><Lock /></el-icon>
+          </template>
+        </el-input>
+      </el-form-item>
 
-        <el-form-item>
-          <el-button
-            type="primary"
-            class="login-card__submit"
-            :loading="loading"
-            @click="handleSubmit"
-          >
-            {{ loading ? '登录中…' : '登 录' }}
-          </el-button>
-        </el-form-item>
-      </el-form>
-
-      <div class="login-card__footer">
-        <span>还没有账号？</span>
-        <el-button link type="primary" @click="router.push({ name: 'register' })">
-          注册新账号
+      <el-form-item class="auth-form__action">
+        <el-button type="primary" class="auth-submit" :loading="loading" @click="handleSubmit">
+          {{ loading ? '登录中…' : '登 录' }}
         </el-button>
-      </div>
+      </el-form-item>
+    </el-form>
 
-      <el-divider>演示账号（点击填入）</el-divider>
-      <div class="login-card__demo">
-        <el-tag
+    <div class="auth-switch">
+      <span>还没有账号？</span>
+      <el-button link type="primary" @click="router.push({ name: 'register' })">
+        注册新账号
+      </el-button>
+    </div>
+
+    <div class="auth-demo">
+      <div class="auth-demo__head">
+        <span class="auth-demo__title">演示账号</span>
+        <span class="auth-demo__hint">点击卡片填入</span>
+      </div>
+      <div class="auth-demo__grid">
+        <button
           v-for="account in demoAccounts"
           :key="account.username"
-          class="login-card__demo-tag"
-          type="info"
-          effect="plain"
+          type="button"
+          class="demo-card"
           @click="fill(account)"
         >
-          {{ account.label }}：{{ account.username }}
-        </el-tag>
+          <span class="demo-card__icon">
+            <el-icon><component :is="account.icon" /></el-icon>
+          </span>
+          <span class="demo-card__label">{{ account.label }}</span>
+          <span class="demo-card__user">{{ account.username }}</span>
+        </button>
       </div>
+      <p class="auth-demo__passwords">用户 / 客服密码 123456 · 管理员 admin123</p>
     </div>
-  </div>
+  </AuthShell>
 </template>
 
 <style scoped>
-.login-page {
+.auth-demo {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.auth-demo__head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: var(--page-bg);
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
-.login-card {
-  width: 400px;
-  padding: 32px;
-  background: #fff;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  box-shadow: 0 2px 12px rgb(0 0 0 / 6%);
-}
-
-.login-card__title {
-  margin: 0;
-  font-size: 18px;
+.auth-demo__title {
+  font-size: 12px;
   font-weight: 600;
-  text-align: center;
+  color: var(--text-regular);
+  letter-spacing: 0.4px;
 }
 
-.login-card__subtitle {
-  margin: 8px 0 24px;
-  text-align: center;
+.auth-demo__hint {
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 11px;
 }
 
-.login-card__submit {
-  width: 100%;
-}
-
-.login-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.login-card__demo {
-  display: flex;
-  flex-wrap: wrap;
+.auth-demo__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
-.login-card__demo-tag {
+.demo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 10px 9px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: #fff;
+  font-family: inherit;
   cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.demo-card:hover {
+  border-color: #c4d3fb;
+  background: var(--brand-softer);
+  transform: translateY(-1px);
+}
+
+.demo-card__icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.demo-card__label {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.demo-card__user {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+.auth-demo__passwords {
+  margin: 10px 0 0;
+  color: #a9b0bf;
+  font-size: 11px;
 }
 </style>

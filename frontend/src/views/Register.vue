@@ -7,6 +7,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 
+import AuthShell from '@/components/auth/AuthShell.vue'
 import { useAuthStore } from '@/stores/auth'
 import type { RegisterRequest } from '@/types'
 
@@ -53,7 +54,14 @@ async function handleSubmit(): Promise<void> {
 
   loading.value = true
   try {
-    const { confirm_password: _ignored, ...payload } = form
+    // 只提交注册接口认识的字段（confirm_password 仅用于前端校验）
+    const payload: RegisterRequest = {
+      username: form.username,
+      password: form.password,
+      nickname: form.nickname || undefined,
+      email: form.email || undefined,
+      phone: form.phone || undefined,
+    }
     await auth.register(payload)
     ElMessage.success('注册成功，请登录')
     await router.push({ name: 'login' })
@@ -66,92 +74,79 @@ async function handleSubmit(): Promise<void> {
 </script>
 
 <template>
-  <div class="auth-page">
-    <div class="auth-card">
-      <h1 class="auth-card__title">注册账号</h1>
-      <p class="auth-card__subtitle">注册后即可购物、申请售后并提交工单</p>
+  <AuthShell>
+    <header class="auth-head">
+      <h1 class="auth-head__title">注册账号</h1>
+      <p class="auth-head__sub">注册后即可购物、申请售后并提交工单。</p>
+    </header>
 
-      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" size="large">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="3~64 个字符" clearable />
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" type="password" show-password placeholder="至少 6 位" />
-        </el-form-item>
-        <el-form-item label="确认密码" prop="confirm_password">
-          <el-input v-model="form.confirm_password" type="password" show-password />
-        </el-form-item>
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-position="top"
+      size="large"
+      @submit.prevent="handleSubmit"
+    >
+      <el-form-item label="用户名" prop="username">
+        <el-input
+          v-model="form.username"
+          placeholder="3~64 个字符"
+          clearable
+          autocomplete="username"
+        />
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input
+          v-model="form.password"
+          type="password"
+          show-password
+          placeholder="至少 6 位"
+          autocomplete="new-password"
+        />
+      </el-form-item>
+      <el-form-item label="确认密码" prop="confirm_password">
+        <el-input
+          v-model="form.confirm_password"
+          type="password"
+          show-password
+          autocomplete="new-password"
+        />
+      </el-form-item>
+
+      <div class="auth-row">
         <el-form-item label="昵称（可选）">
-          <el-input v-model="form.nickname" placeholder="客服称呼您的名字" clearable />
+          <el-input v-model="form.nickname" placeholder="客服称呼你的名字" clearable />
         </el-form-item>
         <el-form-item label="手机号（可选）">
-          <el-input v-model="form.phone" clearable />
+          <el-input v-model="form.phone" placeholder="用于售后联系" clearable />
         </el-form-item>
-
-        <el-form-item>
-          <el-button
-            type="primary"
-            class="auth-card__submit"
-            :loading="loading"
-            @click="handleSubmit"
-          >
-            {{ loading ? '注册中…' : '注 册' }}
-          </el-button>
-        </el-form-item>
-      </el-form>
-
-      <div class="auth-card__footer">
-        <span>已有账号？</span>
-        <el-button link type="primary" @click="router.push({ name: 'login' })">去登录</el-button>
       </div>
+
+      <el-form-item class="auth-form__action">
+        <el-button type="primary" class="auth-submit" :loading="loading" @click="handleSubmit">
+          {{ loading ? '注册中…' : '注 册' }}
+        </el-button>
+      </el-form-item>
+    </el-form>
+
+    <div class="auth-switch">
+      <span>已有账号？</span>
+      <el-button link type="primary" @click="router.push({ name: 'login' })">去登录</el-button>
     </div>
-  </div>
+  </AuthShell>
 </template>
 
 <style scoped>
-.auth-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: var(--page-bg);
+.auth-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
 }
 
-.auth-card {
-  width: 400px;
-  padding: 32px;
-  background: #fff;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  box-shadow: 0 2px 12px rgb(0 0 0 / 6%);
-}
-
-.auth-card__title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  text-align: center;
-}
-
-.auth-card__subtitle {
-  margin: 8px 0 24px;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.auth-card__submit {
-  width: 100%;
-}
-
-.auth-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--border-color);
-  color: var(--text-secondary);
-  font-size: 13px;
+@media (max-width: 480px) {
+  .auth-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

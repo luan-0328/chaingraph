@@ -7,7 +7,7 @@
 
 import asyncio
 
-from app.agent.events import emit_event
+from app.agent.events import aemit_event
 from app.agent.state import AgentState
 from app.core.logging import get_logger
 from app.models.agent_event import AgentEventType
@@ -68,7 +68,7 @@ async def _invoke(
     agent_run_id: int | None,
 ) -> dict:
     """调用一个工具并记录事件。工具内部已经把业务异常转成结构化错误。"""
-    emit_event(
+    await aemit_event(
         agent_run_id=agent_run_id,
         ticket_id=ticket_id,
         event_type=event_type,

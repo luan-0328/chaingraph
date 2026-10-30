@@ -2,7 +2,7 @@
 /**
  * 工单对话列表：渲染 TicketMessageInfo[]，支持 用户 / 客服 / Agent / 系统 四种来源。
  *
- * 布局约定（复用 style.css 的 .chat* 类）：
+ * 布局约定：
  *   Agent  → 左侧气泡（带 Agent 标签，只展示业务内容，绝不展示模型思维链）
  *   系统   → 居中的小字提示（状态变更留痕，不是"谁说的话"）
  *
@@ -15,6 +15,7 @@ import { nextTick, ref, watch } from 'vue'
 import type { TicketMessageInfo } from '@/types'
 import { SENDER_LABEL } from '@/utils/dict'
 import { formatDateTime } from '@/utils/format'
+import TicketImage from './TicketImage.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -42,6 +43,13 @@ function senderTagType(message: TicketMessageInfo): 'primary' | 'success' | 'war
   return 'warning'
 }
 
+/** 头像用图标而不是真人照片：四类来源一眼可分，也不会让用户误以为对面是"某个人" */
+function senderIcon(message: TicketMessageInfo): string {
+  if (message.sender_type === 'AGENT') return 'Cpu'
+  if (message.sender_type === 'CUSTOMER_SERVICE') return 'Service'
+  return 'User'
+}
+
 // 新消息进来后自动滚到底部：用户在工单里发言/Agent 推进时，最新内容应该可见
 const listRef = ref<HTMLElement | null>(null)
 
@@ -57,7 +65,11 @@ watch(
 
 <template>
   <div ref="listRef" v-loading="loading" class="chat">
-    <el-empty v-if="messages.length === 0 && !loading" description="还没有对话记录" :image-size="60" />
+    <el-empty
+      v-if="messages.length === 0 && !loading"
+      description="还没有对话记录"
+      :image-size="60"
+    />
 
     <div
       v-for="message in messages"
@@ -65,34 +77,47 @@ watch(
       class="chat__item"
       :class="{ 'chat__item--right': isMine(message), 'chat__item--system': isSystem(message) }"
     >
-      <div class="chat__meta">
-        <template v-if="!isSystem(message)">
-          <el-tag :type="senderTagType(message)" size="small" disable-transitions>
+      <span
+        v-if="!isSystem(message)"
+        class="chat__avatar"
+        :class="`chat__avatar--${message.sender_type.toLowerCase()}`"
+      >
+        <el-icon><component :is="senderIcon(message)" /></el-icon>
+      </span>
+
+      <div class="chat__body">
+        <div class="chat__meta">
+          <el-tag
+            v-if="!isSystem(message)"
+            :type="senderTagType(message)"
+            size="small"
+            disable-transitions
+          >
             {{ SENDER_LABEL[message.sender_type] }}
           </el-tag>
-        </template>
-        <span class="chat__time">{{ formatDateTime(message.created_at) }}</span>
-      </div>
+          <span class="chat__time">{{ formatDateTime(message.created_at) }}</span>
+        </div>
 
-      <div class="chat__bubble">{{ message.content }}</div>
+        <div class="chat__bubble">
+          {{ message.content }}
+          <TicketImage
+            v-for="attachment in message.attachments || []"
+            :key="attachment.attachment_id"
+            :attachment="attachment"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .chat__time {
-  margin-left: 6px;
+  margin-left: 2px;
 }
 
-/* 系统消息：居中、弱化，读起来像"日志"而不是"某个人的发言" */
-.chat__item--system {
-  text-align: center;
-}
-
+/* 系统消息：读起来像"日志"而不是"某个人的发言" */
 .chat__item--system .chat__bubble {
-  background: transparent;
-  color: var(--text-secondary);
   font-size: 12px;
-  max-width: 100%;
 }
 </style>

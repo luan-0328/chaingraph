@@ -10,7 +10,7 @@
 import asyncio
 import json
 
-from app.agent.events import emit_event
+from app.agent.events import aemit_event
 from app.agent.llm import ainvoke_structured
 from app.agent.prompts import RESULT_SYSTEM_PROMPT
 from app.agent.schemas import AgentResult
@@ -29,7 +29,7 @@ async def generate_result(state: AgentState) -> dict:
     agent_run_id = state.get("agent_run_id")
 
     # 每条路由都会经过本节点；纯咨询跳过 execute_tools 时也能读取历史记忆。
-    emit_event(agent_run_id=agent_run_id, ticket_id=ticket_id,
+    await aemit_event(agent_run_id=agent_run_id, ticket_id=ticket_id,
                event_type=AgentEventType.TOOL_CALLING, message="正在读取该用户的历史处理摘要")
     args = {"user_id": state["user_id"], "limit": 3, "exclude_ticket_id": ticket_id}
     try:
@@ -92,7 +92,7 @@ async def generate_result(state: AgentState) -> dict:
     if missing_solution:
         payload["solution"] = "未生成有效处理方案，请人工核实用户诉求"
 
-    emit_event(
+    await aemit_event(
         agent_run_id=agent_run_id,
         ticket_id=ticket_id,
         event_type=AgentEventType.RESULT_GENERATED,
@@ -105,6 +105,13 @@ async def generate_result(state: AgentState) -> dict:
         result.business_action or "(无)",
         result.need_human,
     )
+
+    if missing_solution or not (valid_answer or valid_action) or failed_query or missing_rules:
+        # 没有可执行方案或可靠依据时，需要真人继续交流，而非反复批准同一无效方案。
+        from app.services.handoff_service import request_from_agent
+        await asyncio.to_thread(request_from_agent, ticket_id=ticket_id,
+            reason="Agent 缺少有效方案、必要业务数据或规则依据，需要人工继续沟通处理",
+            result=payload, decision=decision)
 
     return {
         "result": payload,

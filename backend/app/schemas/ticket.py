@@ -24,6 +24,11 @@ class TicketCreate(BaseModel):
     title: str | None = Field(default=None, max_length=255)
 
 
+class HumanRequest(BaseModel):
+    """用户发起交接只能提供原因，不能指定审批决定或伪造客服身份。"""
+    reason: str = Field(default="用户主动要求人工客服", min_length=1, max_length=500)
+
+
 class TicketMessageCreate(BaseModel):
     """POST /tickets/{id}/messages：在工单下追加一条消息。"""
 
@@ -42,6 +47,12 @@ class TicketMessageInfo(BaseModel):
     sender_id: int | None = None
     content: str
     created_at: UtcDatetime
+    attachments: list[dict] = Field(default_factory=list)
+
+
+class MessageReadRequest(BaseModel):
+    """只标记页面已经显示过的消息，不接受其他工单或未来消息 ID。"""
+    last_message_id: int = Field(ge=0)
 
 
 class AgentEventInfo(BaseModel):
@@ -71,6 +82,13 @@ class AgentRunInfo(BaseModel):
 
     agent_run_id: int
     thread_id: str
+    flow_version: str | None = None
+    execution_spec: dict | None = None
+    review_requested_at: UtcDatetime | None = None
+    review_deadline_at: UtcDatetime | None = None
+    review_reminded_at: UtcDatetime | None = None
+    approval_available: bool = False
+    approval_blocked_reason: str | None = None
     review_round: int = 0
     review_payload: dict | None = None
     execution_epoch: int = 0
@@ -108,6 +126,10 @@ class TicketSummary(BaseModel):
     status: str
     agent_status: str = "IDLE"
     agent_run_id: int | None = None
+    handling_mode: str = "AGENT"
+    unread_count: int = 0
+    handoff_reason: str | None = None
+    handoff_requested_at: UtcDatetime | None = None
     assignee_id: int | None = None
     order_id: int | None = None
     after_sale_id: int | None = None

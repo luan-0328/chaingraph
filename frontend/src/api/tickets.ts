@@ -50,6 +50,28 @@ export function processTicket(ticketId: number): Promise<AgentProcessResponse> {
   return request.post<unknown, AgentProcessResponse>(`/tickets/${ticketId}/process`)
 }
 
+export function requestHuman(ticketId: number): Promise<TicketDetail> {
+  return request.post<unknown, TicketDetail>(`/tickets/${ticketId}/request-human`, {})
+}
+
+export function getUnreadSummary(): Promise<{ unread_messages: number; unread_tickets: number }> {
+  return request.get('/tickets/unread-summary')
+}
+
+export function markTicketRead(ticketId: number, lastMessageId: number): Promise<{ last_message_id: number; unread_count: number }> {
+  return request.post(`/tickets/${ticketId}/read`, { last_message_id: lastMessageId })
+}
+
+export function uploadTicketImage(ticketId: number, file: File): Promise<TicketMessageInfo> {
+  const data = new FormData()
+  data.append('file', file)
+  return request.post(`/tickets/${ticketId}/attachments`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
+}
+
+export function getTicketImageUrl(ticketId: number, attachmentId: number): Promise<{ url: string; expires_in: number }> {
+  return request.get(`/tickets/${ticketId}/attachments/${attachmentId}/url`)
+}
+
 // ======================================================================
 // SSE：Agent 业务进度
 // ======================================================================

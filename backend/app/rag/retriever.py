@@ -10,6 +10,7 @@
 """
 
 from app.core.logging import get_logger
+from app.core.config import settings
 from app.rag.embeddings import get_embeddings
 from app.rag.vector_store import get_vector_store
 
@@ -19,15 +20,16 @@ DEFAULT_TOP_K = 4
 MIN_SCORE = 0.05     # 分数太低视为"没查到相关知识"，避免拿噪音去干扰模型
 
 
-def retrieve(query: str, *, top_k: int = DEFAULT_TOP_K, category: str | None = None) -> list[dict]:
+def retrieve(query: str, *, top_k: int | None = None, category: str | None = None) -> list[dict]:
     """检索相关知识片段。返回按相关度倒序的命中列表。"""
     if not query or not query.strip():
         return []
+    top_k = settings.rag_top_k if top_k is None else top_k
 
     embeddings = get_embeddings()
     vector = embeddings.embed([query])[0]
     hits = get_vector_store().search(vector, top_k=top_k, category=category)
-    hits = [hit for hit in hits if hit["score"] >= MIN_SCORE]
+    hits = [hit for hit in hits if hit["score"] >= settings.rag_min_score]
 
     logger.info(
         "知识检索：query=%r 命中=%s 条（provider=%s）",

@@ -1,0 +1,37 @@
+{
+  "corpus_sha256": {
+    "after_sale_policy.md": "0ece6d4cc96e19871cf07bb2652f0c1950b1dfc1446cc2d56e2cabd6614ba7ce",
+    "damaged_goods_policy.md": "7504ad5325be7eb4a08995e148292ffa5e115e537bb7102d65a0eb7a5af6dad8",
+    "exchange_policy.md": "6de8e0961cab2329e0e78d34b223e789b3033f0d04232cd8f70ecbebebf2b791",
+    "logistics_policy.md": "d72e0a7ebf1f3b1b74d05fb5d998659b20998e3611ff0916fa6c95c8ea3a167c",
+    "refund_policy.md": "4ee2528f503443c4c995912ae0c62c140af3358063c83738f9e0a9443134e8d8",
+    "seven_day_policy.md": "039685c3814c1782a425bb2251f7f091b8c36e27089c9e1b4fa5d9f318f57668",
+    "shipping_policy.md": "b6e9b984d9845b49d72118e4048295a27786c8ae3a1772c4c949cae948f1e1c9"
+  },
+  "suite_sha256": "373d998ec86d26240caa1cc29df715894ad9a05ec6e80dd8e71f8299f74ab06c",
+  "description": "本地哈希向量固定旧参数，仅作防退化检查，不是发布质量标准。不得自动按当前结果重置门槛。",
+  "top_k": 4,
+  "min_score": 0.05,
+  "metrics": {
+    "dev": {
+      "count": 98,
+      "known_count": 78,
+      "unknown_count": 20,
+      "recall_at_k": 0.5876068376068376,
+      "all_evidence_rate": 0.5641025641025641,
+      "mrr_at_k": 0.4700854700854701,
+      "unknown_rejection_rate": 0.0,
+      "known_false_rejection_rate": 0.0
+    },
+    "test": {
+      "count": 42,
+      "known_count": 34,
+      "unknown_count": 8,
+      "recall_at_k": 0.5294117647058824,
+      "all_evidence_rate": 0.5,
+      "mrr_at_k": 0.45588235294117646,
+      "unknown_rejection_rate": 0.0,
+      "known_false_rejection_rate": 0.0
+    }
+  }
+}

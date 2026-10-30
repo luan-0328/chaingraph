@@ -28,6 +28,9 @@ dependencies = [
     # ---------- 其它 ----------
     "python-dotenv>=1.0",
     "httpx>=0.27",                    # 测试/健康检查用
+    "alibabacloud-oss-v2>=1.4.1",
+    "python-multipart>=0.0.32",
+    "pillow>=13.0.0",
 ]
 
 [dependency-groups]

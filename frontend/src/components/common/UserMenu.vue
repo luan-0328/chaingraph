@@ -15,6 +15,9 @@ const roleText = computed(() => {
   return '普通用户'
 })
 
+/** 头像占位：取昵称/用户名的首字，中文用户也能得到一个可读的"头像" */
+const initial = computed(() => (auth.username || '未').slice(0, 1).toUpperCase())
+
 async function handleCommand(command: string): Promise<void> {
   if (command === 'profile') {
     await router.push({ name: 'profile' })
@@ -44,10 +47,14 @@ async function handleCommand(command: string): Promise<void> {
 <template>
   <el-dropdown trigger="click" @command="handleCommand">
     <span class="user-menu">
-      <el-icon><UserFilled /></el-icon>
-      <span class="user-menu__name">{{ auth.username || '未登录' }}</span>
-      <el-tag size="small" type="info">{{ roleText }}</el-tag>
-      <el-icon><ArrowDown /></el-icon>
+      <span class="user-menu__avatar" :class="{ 'user-menu__avatar--staff': auth.isStaff }">
+        {{ initial }}
+      </span>
+      <span class="user-menu__meta">
+        <span class="user-menu__name">{{ auth.username || '未登录' }}</span>
+        <span class="user-menu__role">{{ roleText }}</span>
+      </span>
+      <el-icon class="user-menu__chevron"><ArrowDown /></el-icon>
     </span>
 
     <template #dropdown>
@@ -66,16 +73,67 @@ async function handleCommand(command: string): Promise<void> {
 .user-menu {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  padding: 4px 8px 4px 4px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  color: var(--text-regular);
   outline: none;
+  transition: background-color var(--dur) var(--ease);
+}
+
+.user-menu:hover {
+  background: #f4f6fb;
+}
+
+.user-menu__avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #eef3ff;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 650;
+  flex: none;
+}
+
+.user-menu__avatar--staff {
+  background: #e8f7f1;
+  color: var(--success);
+}
+
+.user-menu__meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  min-width: 0;
 }
 
 .user-menu__name {
-  max-width: 140px;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-menu__role {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.user-menu__chevron {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+@media (max-width: 960px) {
+  .user-menu__meta {
+    display: none;
+  }
 }
 </style>

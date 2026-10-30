@@ -9,6 +9,7 @@ from app.services import agent_task_service as tasks
 
 
 def _related(db, order_id):
+    """按固定顺序锁定订单关联工单及活动任务，多个活动方案时拒绝猜测。"""
     tickets = db.scalars(select(Ticket).where(Ticket.order_id == order_id)
                          .order_by(Ticket.id).with_for_update()).all()
     active = []
@@ -23,6 +24,7 @@ def _related(db, order_id):
 
 
 def get_order_approval_context(order_id: int) -> dict:
+    """返回售后页审批所需的任务轮次和当前业务快照。"""
     with session_scope() as db:
         _, run = _related(db, order_id)
         return {"expected_run_id": run.id if run else None,
@@ -34,6 +36,7 @@ def get_order_approval_context(order_id: int) -> dict:
 
 
 def decide_order_refund(*, order_id: int, operator_id: int, approved: bool, payload) -> None:
+    """核对售后与订单快照，有活动 Agent 时将决定提交给原任务。"""
     from app.services import refund_service, ticket_service
     from app.repositories import after_sale_repository
     review_changed = False

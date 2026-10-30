@@ -31,6 +31,17 @@ function isInvalid(row: CartItemInfo): boolean {
   return row.product_name === null || row.product_status !== 'ON_SALE'
 }
 
+/** 与商品卡片同一套占位规则：色块 + 图标由 product_id 稳定推导 */
+const MEDIA_ICONS = ['Goods', 'Box', 'Present', 'Monitor', 'Handbag']
+
+function productTone(row: CartItemInfo): number {
+  return Math.abs(row.product_id) % 5
+}
+
+function productIcon(row: CartItemInfo): string {
+  return MEDIA_ICONS[Math.abs(row.product_id) % MEDIA_ICONS.length] ?? 'Goods'
+}
+
 /** 给 el-table 的 selection 列用（失效行不允许勾选） */
 function selectable(row: CartItemInfo): boolean {
   return !isInvalid(row)
@@ -148,7 +159,10 @@ onMounted(load)
 <template>
   <div>
     <div class="page-header">
-      <h2 class="page-header__title">购物车</h2>
+      <div>
+        <h2 class="page-header__title">购物车</h2>
+        <p class="page-header__sub">确认商品与数量后结算，下单成功即可在订单详情完成支付。</p>
+      </div>
       <el-button text @click="goProducts">继续购物</el-button>
     </div>
 
@@ -167,18 +181,26 @@ onMounted(load)
         >
           <el-table-column type="selection" width="48" :selectable="selectable" />
 
-          <el-table-column label="商品" min-width="220">
+          <el-table-column label="商品" min-width="260">
             <template #default="{ row }">
-              <span v-if="isInvalid(row)" class="text-secondary">
-                {{ row.product_name ?? '商品已失效' }}（不可结算）
-              </span>
-              <router-link
-                v-else
-                :to="{ name: 'product-detail', params: { id: row.product_id } }"
-                class="cart__link"
-              >
-                {{ row.product_name }}
-              </router-link>
+              <div class="cart__product">
+                <span class="cart__thumb" :class="`cart__thumb--${productTone(row)}`">
+                  <el-icon><component :is="productIcon(row)" /></el-icon>
+                </span>
+                <div class="cart__product-info">
+                  <router-link
+                    v-if="!isInvalid(row)"
+                    :to="{ name: 'product-detail', params: { id: row.product_id } }"
+                    class="cart__link"
+                  >
+                    {{ row.product_name }}
+                  </router-link>
+                  <span v-else class="text-secondary">
+                    {{ row.product_name ?? '商品已失效' }}（不可结算）
+                  </span>
+                  <span class="cart__product-id">#{{ row.product_id }}</span>
+                </div>
+              </div>
             </template>
           </el-table-column>
 
@@ -219,22 +241,26 @@ onMounted(load)
         <div class="cart__footer">
           <div class="cart__summary">
             <span class="text-secondary">
-              已选 {{ selectedRows.length }} 种 / {{ selectedCount }} 件（共 {{ validRows.length }} 种可结算）
-            </span>
-            <span class="cart__amount">
-              合计：<span class="text-price">{{ formatAmount(selectedAmount) }}</span>
+              已选 {{ selectedRows.length }} 种 / {{ selectedCount }} 件（共
+              {{ validRows.length }} 种可结算）
             </span>
           </div>
 
-          <el-button
-            type="primary"
-            size="large"
-            :loading="submitting"
-            :disabled="selectedRows.length === 0"
-            @click="handleCheckout"
-          >
-            结算下单
-          </el-button>
+          <div class="cart__checkout">
+            <div class="cart__amount-block">
+              <span class="cart__amount-label">应付合计</span>
+              <span class="cart__amount">{{ formatAmount(selectedAmount) }}</span>
+            </div>
+            <el-button
+              type="primary"
+              size="large"
+              :loading="submitting"
+              :disabled="selectedRows.length === 0"
+              @click="handleCheckout"
+            >
+              结算下单
+            </el-button>
+          </div>
         </div>
       </template>
     </div>
@@ -242,8 +268,65 @@ onMounted(load)
 </template>
 
 <style scoped>
+.cart__product {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cart__thumb {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  font-size: 19px;
+  flex: none;
+}
+
+.cart__thumb--0 {
+  background: #eef3ff;
+  color: #3b6cf0;
+}
+
+.cart__thumb--1 {
+  background: #e8f7f1;
+  color: #16a374;
+}
+
+.cart__thumb--2 {
+  background: #fef6e9;
+  color: #d18b12;
+}
+
+.cart__thumb--3 {
+  background: #f1edff;
+  color: #7357d9;
+}
+
+.cart__thumb--4 {
+  background: #fef0f0;
+  color: #d9534f;
+}
+
+.cart__product-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.cart__product-id {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
 .cart__link {
   color: var(--text-primary);
+  font-weight: 500;
 }
 
 .cart__link:hover {
@@ -254,9 +337,13 @@ onMounted(load)
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
   margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-color);
+  padding: 14px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: #f8f9fd;
+  flex-wrap: wrap;
 }
 
 .cart__summary {
@@ -264,9 +351,39 @@ onMounted(load)
   align-items: baseline;
   gap: 16px;
   flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.cart__checkout {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.cart__amount-block {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.cart__amount-label {
+  color: var(--text-secondary);
+  font-size: 11px;
 }
 
 .cart__amount {
-  font-size: 16px;
+  color: var(--price);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+@media (max-width: 640px) {
+  .cart__checkout {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 </style>

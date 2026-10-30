@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     embedding_base_url: str = ""
     embedding_model: str = ""
     embedding_dim: int = 0
+    # 检索参数必须按实际 Embedding 和评测集校准，保留原默认值便于回归对照。
+    rag_top_k: int = 4
+    rag_min_score: float = 0.05
 
     # ---------------- 向量库（RAG 检索后端） ----------------
     # qdrant = 索引与检索走 Qdrant（默认）；mysql = 旧实现（全量 numpy 余弦，作为回退保留）
@@ -78,11 +81,25 @@ class Settings(BaseSettings):
     agent_lease_seconds: int = 120
     agent_heartbeat_seconds: int = 15
     agent_poll_seconds: float = 1.0
+    agent_max_concurrency: int = 4
+    # 审批到期不会自动批准或退款；交回客服继续处理。
+    agent_review_timeout_seconds: int = 86400
+    agent_review_reminder_seconds: int = 3600
 
     # 确定性 LLM 桩：只在并发验收测试时打开（AGENT_STUB_LLM=1），
     # 让"每次执行的耗时"可控，从而稳定地测出"同工单互斥、异工单并发"。
     # 正常启动保持关闭，走真实模型。
     agent_stub_llm: bool = False
+
+    # OSS 使用私有桶，凭据只在后端读取；留空时禁用图片上传，不影响文字对话。
+    oss_access_key_id: str = ""
+    oss_access_key_secret: str = ""
+    oss_security_token: str = ""
+    oss_region: str = ""
+    oss_endpoint: str = ""
+    oss_bucket: str = ""
+    oss_max_upload_bytes: int = 5 * 1024 * 1024
+    oss_signed_url_seconds: int = 300
 
     # ---------------- CORS ----------------
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
@@ -108,6 +125,16 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_deployment_security(self):
+        if not 1 <= self.rag_top_k <= 50 or not 0 <= self.rag_min_score <= 1:
+            raise ValueError("RAG_TOP_K 必须为 1～50，RAG_MIN_SCORE 必须在 0～1 之间")
+        if not 1 <= self.oss_max_upload_bytes <= 10 * 1024 * 1024:
+            raise ValueError("OSS_MAX_UPLOAD_BYTES 必须在 1 到 10 MB 之间")
+        if not 60 <= self.oss_signed_url_seconds <= 3600:
+            raise ValueError("OSS_SIGNED_URL_SECONDS 必须在 60 到 3600 秒之间")
+        if not 1 <= self.agent_max_concurrency <= 32:
+            raise ValueError("AGENT_MAX_CONCURRENCY 必须在 1 到 32 之间")
+        if not 0 < self.agent_review_reminder_seconds < self.agent_review_timeout_seconds:
+            raise ValueError("审批提醒间隔必须大于 0 且小于审批期限")
         if self.app_env.lower() not in ("dev", "development", "test", "testing"):
             if len(self.jwt_secret) < 32 or self.jwt_secret == "dev-only-change-me":
                 raise ValueError("非开发环境必须配置至少 32 字符的 JWT_SECRET")

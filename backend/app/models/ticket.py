@@ -71,6 +71,13 @@ class AgentStatus:
     OCCUPIED = (RUNNING, WAITING_HUMAN)
 
 
+class HandlingMode:
+    """人工处理与审批分开：交接中仍保留原执行权，确认停机后才允许人工操作。"""
+    AGENT = "AGENT"
+    HUMAN_PENDING = "HUMAN_PENDING"
+    HUMAN = "HUMAN"
+
+
 class TicketPriority:
     LOW = "LOW"
     NORMAL = "NORMAL"
@@ -100,6 +107,10 @@ class Ticket(Base, TimestampMixin):
         String(16), nullable=False, default=AgentStatus.IDLE, server_default=AgentStatus.IDLE
     )
     agent_run_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    handling_mode: Mapped[str] = mapped_column(String(16), nullable=False, default=HandlingMode.AGENT, server_default=HandlingMode.AGENT)
+    handoff_round: Mapped[int] = mapped_column(default=0, server_default="0")
+    handoff_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    handoff_requested_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     # 客服领取后写入
     assignee_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
@@ -131,6 +142,10 @@ class Ticket(Base, TimestampMixin):
             "status": self.status,
             "agent_status": self.agent_status,
             "agent_run_id": self.agent_run_id,
+            "handling_mode": self.handling_mode,
+            "handoff_round": self.handoff_round,
+            "handoff_reason": self.handoff_reason,
+            "handoff_requested_at": self.handoff_requested_at,
             "assignee_id": self.assignee_id,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
